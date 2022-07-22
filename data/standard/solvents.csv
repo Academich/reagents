@@ -1,0 +1,44 @@
+name;smiles;boiling_temp
+acetonitrile;CC#N;81.3
+nitromethane;C[N+](=O)[O-];101.2
+toluene;Cc1ccccc1;111.0
+benzene;c1ccccc1;80.1
+pyridine;c1ccncc1;115.2
+chlorobenzene;c1ccc(cc1)Cl;131.70
+1,2-dichlorobenzene;c1ccc(c(c1)Cl)Cl;180.19
+dichloromethane;ClCCl;39.6
+1,1-dichloroethane;ClC(Cl)C;57.2
+1,2-dichloroethane;ClCCCl;84.0
+chloroform;ClC(Cl)Cl;61.15
+carbon tetrachloride;ClC(Cl)(Cl)Cl;76.72
+THF;C1CCOC1;66.0
+2-methyl-THF;O1C(C)CCC1;80.2 
+1,4-dioxane;O1CCOCC1;101.1
+pentane;CCCCC;36
+hexane;CCCCCC;68.5
+heptane;CCCCCCC;98.38
+cyclohexane;C1CCCCC1;80.74
+cyclopentane;C1CCCC1;49.3
+methanol;CO;64.7
+ethanol;CCO;78.23
+1-propanol;CCCO;97
+n-butanol;CCCCO;117.7
+isopropanol;CC(O)C;82.6
+tert-butanol;CC(C)(C)O;82.0
+isobutanol;CC(C)CO;107.89
+acetone;CC(=O)C;56.05
+butanone;O=C(C)CC;79.64
+DMF;CN(C)C=O;153.0
+N-methyl-2-pyrrolidone;CN1CCCC1=O;202
+N-methylacetamide;CC(=O)NC;202
+dimethylacetamide;CC(=O)N(C)C;165.1
+DMSO;CS(C)=O;189.0
+HMPA;O=P(N(C)C)(N(C)C)N(C)C;232.5
+ethylene glycol;OCCO;197.3
+acetic acid;CC(O)=O;118.0
+TFA;O=C(O)C(F)(F)F;72.4
+diethyl ether;CCOCC;34.6
+1,2-DME;COCCOC;85
+Methyl tert-butyl ether;O(C(C)(C)C)C;55.2
+ethyl acetate;O=C(OCC)C;77.1
+carbon disulfide;S=C=S;46.24
