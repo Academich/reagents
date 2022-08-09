@@ -37,8 +37,9 @@ def main(args):
         ut.assign_reaction_roles_schneider,
         ut.drop_atom_mapping,
         ut.drop_isotopes,
-        ut.order_molecules,
         ut.fix_charcoal,
+        ut.assemble_ions,
+        ut.order_molecules,
         ut.canonicalize_reaction
     ]
 

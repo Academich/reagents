@@ -258,6 +258,140 @@ def fix_charcoal(smi: str) -> str:
     return smi
 
 
+class IonAssembler:
+    """
+    Assembles broken ions of Al and B.
+    Like [Al+3].[H-].[H-].[H-].[H-] becomes [AlH4-]
+    Assembles hydrides, chlorides and bromides of Al and B.
+    """
+
+    @classmethod
+    def _get_charge(cls, mol: str, at: str) -> int:
+        charge = mol.split(f"{at}+")[1][0]
+        if charge.isdigit():
+            return int(charge)
+        elif charge == "]":
+            return 1
+        else:
+            raise ValueError("Cannot get charge")
+
+    @classmethod
+    def _signed_number(cls, n: int) -> str:
+        if n == 1:
+            return "+"
+        elif n == 0:
+            return ""
+        elif n == -1:
+            return "-"
+        elif n > 0:
+            return f"+{n}"
+        else:
+            return f"-{n}"
+
+    @classmethod
+    def _balance_ion(cls, smi: str, atom: str) -> str:
+        if f"[{atom}+" in smi:
+            mols = smi.split(".")
+            result = []
+            particles = Counter(mols)
+            met_prt = []
+            for p, n in particles.items():
+                if f"[{atom}+" in p:
+                    met_prt += [p] * n
+            met_prt.sort(key=lambda x: cls._get_charge(x, atom), reverse=True)
+            particles = {p: n for p, n in particles.items() if p not in met_prt}
+
+            total_charge_to_balance = sum((cls._get_charge(i, atom) for i in met_prt))
+            total_charge_to_balance += sum((cls._get_charge(i, "Zn") for i in mols if "[Zn+" in i))
+            total_charge_to_balance += sum((cls._get_charge(i, "Ti") for i in mols if "[Ti+" in i))
+            total_charge_to_balance += sum((cls._get_charge(i, "Ca") for i in mols if "[Ca+" in i))
+            total_balancers = particles.get("[Cl-]", 0)
+            if total_balancers == 0:
+                total_balancers += particles.get("[Br-]", 0)
+            if total_balancers == 0:
+                total_balancers += particles.get("[H-]", 0)
+            split_even = total_balancers % total_charge_to_balance == 0 and (
+                    len(met_prt) + int("[Zn+" in smi) + int("[Ti+" in smi) + int("[Ca+" in smi)) > 1
+
+            for p in met_prt:
+                charge = cls._get_charge(p, atom)
+
+                if bool(particles.get("[Cl-]")):
+                    n_balance = min(charge + 1, particles["[Cl-]"])
+
+                    if charge < 3 or n_balance < 3:
+                        result.append(p)
+                        continue
+                    if split_even:
+                        n_balance -= 1
+                        split_even = False
+
+                    balanced = Chem.CanonSmiles(
+                        p.replace(f"[{atom}+" + str(charge) * (charge > 1) + "]",
+                                  f"[{atom}" + cls._signed_number(charge - n_balance) + "]" + "(Cl)" * (
+                                          n_balance - 1) + "Cl")
+                    )
+                    result.append(balanced)
+                    particles["[Cl-]"] -= n_balance
+                    continue
+
+                if bool(particles.get("[Br-]")):
+                    n_balance = min(charge + 1, particles["[Br-]"])
+
+                    if charge < 3 or n_balance < 3:
+                        result.append(p)
+                        continue
+
+                    balanced = Chem.CanonSmiles(
+                        p.replace(f"[{atom}+" + str(charge) * (charge > 1) + "]",
+                                  f"[{atom}" + cls._signed_number(charge - n_balance) + "]" + "(Br)" * (
+                                          n_balance - 1) + "Br")
+                    )
+                    result.append(balanced)
+                    particles["[Br-]"] -= n_balance
+                    continue
+
+                if bool(particles.get("[H-]")):
+                    n_balance = min(charge + 1, particles["[H-]"])
+                    if split_even:
+                        n_balance -= 1
+                        split_even = False
+                    if charge == 3 and n_balance == 1:
+                        result.append(p)
+                        continue
+                    balanced = p.replace(f"[{atom}+" + str(charge) * (charge > 1) + "]",
+                                         f"[{atom}H{n_balance}".replace("1", "") + cls._signed_number(
+                                             charge - n_balance) + "]")
+                    result.append(balanced)
+                    particles["[H-]"] -= n_balance
+                    continue
+
+                result.append(p)
+
+            leftovers = [[p] * n for p, n in particles.items()]
+            leftovers = sum(leftovers, [])
+            return ".".join(result + leftovers)
+        else:
+            return smi
+
+    @classmethod
+    def run(cls, smi: str) -> str:
+        # Assemble aluminium and boron halogenides and hydrides
+        res = cls._balance_ion(smi, "Al")
+        res = cls._balance_ion(res, "B")
+        return res
+
+
+def assemble_ions(smi: str) -> str:
+    left, center, right = smi.split(">")
+    try:
+        _center = IonAssembler.run(center)
+    except:
+        print(center)
+        raise
+    return left + ">" + _center + ">" + right
+
+
 def separate_solvents(solvents_set: Set[str], smi: str) -> str:
     mols = smi.split('.')
     agents, slvs = [], []
@@ -331,3 +465,16 @@ def run_on_subset(func: Callable, use_tqdm, data_subset):
 
 def parallelize_on_rows(d: Series, func, num_of_processes: int, use_tqdm=False) -> Series:
     return __parallelize(d, partial(run_on_subset, func, use_tqdm), num_of_processes)
+
+
+if __name__ == '__main__':
+    problems = ["C1=CC=CC=C1.CC[Al+2].CC[Al+2].[Cl-].[Cl-].[Cl-].[Cl-].O",
+                "CC(C[Al+]CC(C)C)C.CC(C)C[Al+]CC(C)C.O=S(=O)(O)O.C(CCC)CC.C1CCOC1.CCCCCC.CCOCC.[H-].[H-]",
+                "C1=CC([Ti+2]C2C=CC=C2)C=C1.C1CN2CCN1CC2.CC[Al+2].[Cl-].[Cl-].[Cl-].[Cl-]",
+                "CC(C)C[Al+]CC(C)C.CC(C)C[Al+]CC(C)C.CC1=CC=CC=C1.CC1=CC=CC=C1.[H-].[H-].CO.O",
+                "ClC(Cl)(Cl)Cl.ClC(Cl)(Cl)Cl.[Al+3].[Al+3].[Cl-].[Cl-].[Cl-].[Cl-].[Cl-].[Cl-].Cl",
+                "CC(C)C[Al+]CC(C)C.CCCC[Al+]CCCC.CC1=CC=CC=C1.CCOC(C)=O.[H-].[H-].O",
+                "[Zn+2].[Al+3].ClCCCl.[Cl-].[Cl-].[Cl-].[Cl-].[Cl-]"]
+    s1 = "[Al+].[H-].[Cl-]"
+    res = IonAssembler.run("ClC(Cl)(Cl)Cl.ClC(Cl)(Cl)Cl.[Al+3].[Al+3].[Cl-].[Cl-].[Cl-].[Cl-].[Cl-].[Cl-].Cl")
+    print(res)
