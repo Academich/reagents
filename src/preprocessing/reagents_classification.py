@@ -66,12 +66,13 @@ class HeuristicRoleClassifier:
     2. Oxidizing agents
     3. Reducing agents
     4. Acids
-    5. Solvents
+    5. Bases
     6. Unspecified
+    7. Solvents
     """
     solvents = SOLVENTS
     cat_metals = CATALYTIC_METALS
-    types = ["Catalyst", "Ox", "Red", "Acid", "Base", "Unspecified"]
+    types = ["Catalyst", "Ox", "Red", "Acid", "Base", "Unspecified", "Solvent"]
 
     @classmethod
     def classify(cls, reagents_smi: str) -> Tuple[List[str], ...]:
@@ -108,7 +109,7 @@ class HeuristicRoleClassifier:
                 continue
             unspec.append(m)
 
-        return catal, ox, red, acid, base, solvent, unspec
+        return catal, ox, red, acid, base, unspec, solvent
 
     @classmethod
     def classify_to_str(cls, reagents_smi: str) -> str:
@@ -163,7 +164,7 @@ class HeuristicRoleClassifier:
             return True
         elif is_metal_halogenide:
             return True
-        elif smi == "CCOC(=O)N=NC(=O)OCC":
+        elif smi == "CCOC(=O)N=NC(=O)OCC":  # DEAD for Mitsunobu reactions
             return True
         else:
             return False
@@ -192,7 +193,7 @@ class HeuristicRoleClassifier:
     @staticmethod
     def is_base(smi: str, graph: 'Chem.Mol') -> bool:
         # Salts of alcohols and carbon acids are bases
-        # Amines are bases. However, let's only consider bases with several nitrogens here
+        # Amines are bases
         # Diimides and free nitrogen also end up here, but it should not be a problem
         is_tertiary_or_secondary_amine = ((Fragments.fr_NH1(graph) > 0) or (Fragments.fr_NH0(graph) > 0)) and (
                 len(set([i.upper() for i in smi if i.isalpha()]) - {'C', 'N'}) == 0)
@@ -222,7 +223,7 @@ class HeuristicRoleClassifier:
                 ) or is_peroxide or is_standard or is_metal_ox or is_chlorinator or is_iod_ox or is_nbs
 
     @staticmethod
-    def is_reducing_agent(smi: str, graph: 'Chem.Mol') -> bool:
+    def is_reducing_agent(smi: str) -> bool:
         # Some standard molecules are reducing agents
         is_standard = any([j == smi for j in ("[H][H]", "B", "[BH4-]", "NN", "Cl[Sn]Cl", "[S-2]", "O=[PH2]O")])
         is_compound_boron = any([j == smi for j in ("[BH3-]C#N", "CC(=O)O[BH-](OC(C)=O)OC(C)=O")])
@@ -230,5 +231,5 @@ class HeuristicRoleClassifier:
 
 
 if __name__ == '__main__':
-    s = "CC(C)=O.[I-].[Na+]"
+    s = "CC(=O)C.[I-].[Na+]"
     print(HeuristicRoleClassifier.classify(s))
