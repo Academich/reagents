@@ -1,5 +1,5 @@
 SOLVENTS = [
-    "CC#N"
+    "CC#N",
     "C[N+](=O)[O-]",
     "Cc1ccccc1",
     "c1ccccc1",
