@@ -9,11 +9,11 @@ from collections import Counter
 
 import pandas as pd
 
-from rdkit import Chem
 from rdkit import RDLogger
 
-from src.preprocessing.reaction_preprocessing import ReactionPreprocessingPipeline
 import src.utils as ut
+from src.preprocessing.reaction_preprocessing import ReactionPreprocessingPipeline
+from src.preprocessing.solvents import SOLVENTS
 from src.tokenizer import ChemSMILESTokenizer
 from src.augmenter import augment_rxn
 from src.pysmilesutils.pysmilesutils_augmenter import SMILESAugmenter
@@ -132,9 +132,7 @@ def main(args):
     data.drop(["Reactants", "Reagents", "Products"], axis=1, inplace=True)
 
     logging.info("Reading standard solvents from file, separating solvents from the other reagents")
-    solvents = pd.read_csv(args.standard_solvents_path, sep=";")
-    solvents.smiles = solvents.smiles.apply(Chem.CanonSmiles)
-    solvents_smiles = set(solvents.smiles)
+    solvents_smiles = set(SOLVENTS)
 
     reagents = roles["Reagents"].apply(partial(ut.separate_solvents, solvents_smiles)).str.split("&", expand=True)
     reagents.columns = ["Reagents", "Solvents"]
@@ -247,9 +245,6 @@ if __name__ == '__main__':
     group_prep.add_argument("--use_special_tokens", action="store_true",
                             help="Use special tokens: long frequent reagents get a special token, "
                                  "standard solvents get special token each.")
-    group_prep.add_argument("--standard_solvents_path", type=str,
-                            help="Path to the .csv-file with standard solvents. "
-                                 "Only makes sense if --use_special_tokens is True")
     group_prep.add_argument("--use_augmentations", action="store_true", help="Whether to augment reaction SMILES.")
     group_prep.add_argument("--min_reagent_occurances", type=int, default=None,
                             help="If not None, all reagent with number of occurrences less than this "
