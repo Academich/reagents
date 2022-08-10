@@ -5,51 +5,7 @@ from collections import Counter
 from rdkit import Chem
 from rdkit.Chem import Fragments
 
-SOLVENTS = [
-    "CC#N"
-    "C[N+](=O)[O-]",
-    "Cc1ccccc1",
-    "c1ccccc1",
-    "c1ccncc1",
-    "c1ccc(cc1)Cl",
-    "c1ccc(c(c1)Cl)Cl",
-    "ClCCl",
-    "ClC(Cl)C",
-    "ClCCCl",
-    "ClC(Cl)Cl",
-    "ClC(Cl)(Cl)Cl",
-    "C1CCOC1",
-    "O1C(C)CCC1",
-    "O1CCOCC1",
-    "CCCCC",
-    "CCCCCC",
-    "CCCCCCC",
-    "C1CCCCC1",
-    "C1CCCC1",
-    "CO",
-    "CCO",
-    "CCCO",
-    "CCCCO",
-    "CC(O)C",
-    "CC(C)(C)O",
-    "CC(C)CO",
-    "CC(=O)C",
-    "O=C(C)CC",
-    "CN(C)C=O",
-    "CN1CCCC1=O",
-    "CC(=O)NC",
-    "CC(=O)N(C)C",
-    "CS(C)=O",
-    "O=P(N(C)C)(N(C)C)N(C)C",
-    "OCCO",
-    "CC(O)=O",
-    "O=C(O)C(F)(F)F",
-    "CCOCC",
-    "COCCOC",
-    "O(C(C)(C)C)C",
-    "O=C(OCC)C",
-    "S=C=S"
-]
+from src.preprocessing.solvents import SOLVENTS
 
 CATALYTIC_METALS = {"Ti", "V", "Cr", "Mn", "Fe", "Co", "Ni", "Cu", "Zn", "Ga", "Ge", "As",
                     "Y", "Zr", "Nb", "Mo", "Tc", "Ru", "Rh", "Pd", "Ag", "Cd", "In", "Sn", "Sb", "La", "Ce", "Hf", "Ta",
@@ -98,7 +54,7 @@ class HeuristicRoleClassifier:
             if cls.is_oxidizing_agent(m):
                 ox.append(m)
                 continue
-            if graph is not None and cls.is_reducing_agent(m, graph):
+            if graph is not None and cls.is_reducing_agent(m):
                 red.append(m)
                 continue
             if graph is not None and cls.is_acid(m, graph):
@@ -225,11 +181,12 @@ class HeuristicRoleClassifier:
     @staticmethod
     def is_reducing_agent(smi: str) -> bool:
         # Some standard molecules are reducing agents
-        is_standard = any([j == smi for j in ("[H][H]", "B", "[BH4-]", "NN", "Cl[Sn]Cl", "[S-2]", "O=[PH2]O")])
-        is_compound_boron = any([j == smi for j in ("[BH3-]C#N", "CC(=O)O[BH-](OC(C)=O)OC(C)=O")])
-        return is_standard or is_compound_boron
+        is_boron_hydride = "[BH" in smi
+        is_aluminium_hydride = "[AlH" in smi
+        is_standard = any([j == smi for j in ("[H][H]", "B", "NN", "Cl[Sn]Cl", "[S-2]", "O=[PH2]O")])
+        return is_standard or is_aluminium_hydride or is_boron_hydride
 
 
 if __name__ == '__main__':
-    s = "CC(=O)C.[I-].[Na+]"
+    s = "CC(=O)C.[I-].[Na+].[Li+].[AlH4-]"
     print(HeuristicRoleClassifier.classify(s))
