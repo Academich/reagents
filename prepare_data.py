@@ -12,8 +12,7 @@ import pandas as pd
 from rdkit import RDLogger
 
 import src.utils as ut
-from src.preprocessing.reaction_preprocessing import ReactionPreprocessingPipeline
-from src.preprocessing.solvents import SOLVENTS
+from src.preprocessing import SOLVENTS, ReactionPreprocessingPipeline, HeuristicRoleClassifier
 from src.tokenizer import ChemSMILESTokenizer
 from src.augmenter import augment_rxn
 from src.pysmilesutils.pysmilesutils_augmenter import SMILESAugmenter
@@ -125,16 +124,20 @@ def main(args):
         data = data.explode("ProcessedReaction")
         data.reset_index(drop=True, inplace=True)
 
-    # === 4. Separating solvents from the rest of the reagents ===
-
     roles = data["ProcessedReaction"].str.split(">", expand=True)
     roles.columns = ["Reactants", "Reagents", "Products"]
     data.drop(["Reactants", "Reagents", "Products"], axis=1, inplace=True)
+    reagents = roles["Reagents"]
 
-    logging.info("Reading standard solvents from file, separating solvents from the other reagents")
+    # === 5. Rearranging reagents according to role priorities
+    logging.info("Rearranging reagents according to their detailed roles.")
+    reagents = reagents.apply(HeuristicRoleClassifier.rearrange_reagents)
+
+    # === 6. Separating solvents from the rest of the reagents ===
+    logging.info("Separating solvents from the other reagents")
     solvents_smiles = set(SOLVENTS)
 
-    reagents = roles["Reagents"].apply(partial(ut.separate_solvents, solvents_smiles)).str.split("&", expand=True)
+    reagents = reagents.apply(partial(ut.separate_solvents, solvents_smiles)).str.split("&", expand=True)
     reagents.columns = ["Reagents", "Solvents"]
     roles["Reagents"] = reagents["Reagents"]
     roles = pd.concat((roles, reagents["Solvents"]), axis=1)
