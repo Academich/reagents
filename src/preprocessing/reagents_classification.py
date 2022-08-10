@@ -26,7 +26,7 @@ class HeuristicRoleClassifier:
     6. Unspecified
     7. Solvents
     """
-    solvents = SOLVENTS
+    solvents = list(SOLVENTS)
     cat_metals = CATALYTIC_METALS
     types = ["Catalyst", "Ox", "Red", "Acid", "Base", "Unspecified", "Solvent"]
 
