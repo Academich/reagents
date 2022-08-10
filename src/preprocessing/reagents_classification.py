@@ -68,15 +68,28 @@ class HeuristicRoleClassifier:
         return catal, ox, red, acid, base, unspec, solvent
 
     @classmethod
-    def classify_to_str(cls, reagents_smi: str) -> str:
-        catal, ox, red, acid, base, solvent, unspec = cls.classify(reagents_smi)
+    def __join_species(cls, reagents_smi: str):
+        catal, ox, red, acid, base, unspec, solvent = cls.classify(reagents_smi)
         catal_smi = ".".join(sorted(catal, key=lambda x: len(x), reverse=True))
         ox_smi = ".".join(sorted(ox, key=lambda x: len(x), reverse=True))
         red_smi = ".".join(sorted(red, key=lambda x: len(x), reverse=True))
         acid_smi = ".".join(sorted(acid, key=lambda x: len(x), reverse=True))
         base_smi = ".".join(sorted(base, key=lambda x: len(x), reverse=True))
         unspec_smi = ".".join(sorted(unspec, key=lambda x: len(x), reverse=True))
-        return "&".join((catal_smi, ox_smi, red_smi, acid_smi, base_smi, unspec_smi))
+        solv_smi = ".".join(sorted(solvent, key=lambda x: len(x), reverse=True))
+        return catal_smi, ox_smi, red_smi, acid_smi, base_smi, unspec_smi, solv_smi
+
+    @classmethod
+    def rearrange_reagents(cls, reagents_smi: str) -> str:
+        res = []
+        for s in cls.__join_species(reagents_smi):
+            if s != '':
+                res.append(s)
+        return ".".join(res)
+
+    @classmethod
+    def classify_to_str(cls, reagents_smi: str) -> str:
+        return "&".join(cls.__join_species(reagents_smi))
 
     @classmethod
     def role_voting(cls, regents_smi: str):
@@ -188,5 +201,5 @@ class HeuristicRoleClassifier:
 
 
 if __name__ == '__main__':
-    s = "CC(=O)C.[I-].[Na+].[Li+].[AlH4-]"
-    print(HeuristicRoleClassifier.classify(s))
+    sm = "[AlH4-].[OH-].[Na+].[Li+].CCOCC"
+    print(HeuristicRoleClassifier.rearrange_reagents(sm))
