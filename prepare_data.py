@@ -1,4 +1,3 @@
-from copy import deepcopy
 from pathlib import Path
 from argparse import ArgumentParser
 import logging
@@ -173,7 +172,8 @@ def main(args):
         logging.info("Deriving tokenization vocabulary...")
         t_source = ChemSMILESTokenizer.based_on_smiles(
             domain.values.flatten().tolist() + data["Reagents"].values.flatten().tolist())
-        t_target = deepcopy(t_source)
+        t_target = ChemSMILESTokenizer.based_on_smiles(
+            domain.values.flatten().tolist() + data["Reagents"].values.flatten().tolist())
         if len(single_token_reagents) > 0:
             t_target.add_tokens(single_token_reagents, regex=False)
             t_target.vocabulary.update({s: i + len(t_target.vocabulary) for i, s in enumerate(single_token_reagents)})
