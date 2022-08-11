@@ -33,7 +33,7 @@ class MTPredictor:
         raise NotImplementedError
 
     def _run_inference(self):
-        command = ["python", "translate.py",
+        command = ["python3", "translate.py",
                    "-model", self.model_path,
                    "-src", self.tokenized_path,
                    "-output", self.output_path,
@@ -45,7 +45,9 @@ class MTPredictor:
                    "-fast"]
         if self.gpu is not None:
             command = command + ["-gpu", str(self.gpu)]
-        subprocess.run(command, capture_output=True)
+        print("Running the command:")
+        print(" ".join(command))
+        subprocess.run(command, capture_output=True, check=True)
 
     def _load_predictions(self):
         with open(self.output_path) as f:
