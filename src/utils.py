@@ -85,7 +85,7 @@ def assign_reaction_roles_by_aam(smi: str) -> str:
 
 # === Atom mapping ===
 
-def _extract_atom_from_aam(term: re.Match) -> str:
+def _extract_atom_from_aam(term) -> str:
     """
     Extracts group without AAM from an AAM term (substring)
     :param term: Matched substring which is an atom-mapped group
@@ -161,7 +161,7 @@ def canonicalize_reaction(smi: str) -> str:
 
 
 # === SMILES trimming and reordering
-def _extract_isotope(term: re.Match) -> str:
+def _extract_isotope(term) -> str:
     """
     Extracts group without AAM from an AAM term (substring)
     :param term: Matched substring which is an atom-mapped group
