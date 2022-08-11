@@ -1,7 +1,6 @@
 """SMILES Tokenizer module.
 """
 import re
-from re import Pattern
 from typing import Dict
 from typing import List
 from typing import Optional
@@ -124,7 +123,7 @@ class SMILESTokenizer:
         return self._decoder_vocabulary
 
     @property
-    def re(self) -> Pattern:
+    def re(self):
         """Tokens Regex Object.
 
         :return: Tokens Regex Object
