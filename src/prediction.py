@@ -47,7 +47,7 @@ class MTPredictor:
             command = command + ["-gpu", str(self.gpu)]
         print("Running the command:")
         print(" ".join(command))
-        subprocess.run(command, capture_output=True, check=True)
+        subprocess.run(command, check=True)
 
     def _load_predictions(self):
         with open(self.output_path) as f:
