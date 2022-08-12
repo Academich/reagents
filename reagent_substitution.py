@@ -75,7 +75,7 @@ def get_files_for_forward_prediction(path, subset: str, reag_predictor: 'MTReage
     direct.mkdir(parents=True, exist_ok=True)
     with open(direct / f"src-{subset}.txt", 'w') as h:
         h.write(
-            "\n".join(data["rxn_no_reagents"].apply(tokenizer))
+            "\n".join(data["rxn_no_reagents"].apply(lambda x: x[:x.index(">")]).apply(tokenizer))
         )
 
     # ===============================================================================
