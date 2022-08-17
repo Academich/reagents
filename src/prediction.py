@@ -7,6 +7,7 @@ import numpy as np
 
 from src.tokenizer import ChemSMILESTokenizer
 from src.preprocessing.reagents_classification import HeuristicRoleClassifier
+from src import translate_script_path
 
 
 class MTPredictor:
@@ -33,7 +34,7 @@ class MTPredictor:
         raise NotImplementedError
 
     def _run_inference(self):
-        command = ["python3", "translate.py",
+        command = ["python3", translate_script_path,
                    "-model", self.model_path,
                    "-src", self.tokenized_path,
                    "-output", self.output_path,
