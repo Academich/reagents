@@ -154,7 +154,8 @@ class HeuristicRoleClassifier:
             sulf_am_deriv) or graph.HasSubstructMatch(
             phos_deriv)) and "O-]" not in smi and any([i in _graph_with_h for i in ["O[H]", "[H]O"]])
 
-        is_standard_acid = any([i == smi for i in ('Cl', 'Br', 'I', 'F', '[NH4+]', 'BrB(Br)Br')])
+        is_standard_acid = any([i == smi for i in ('Cl', 'Br', 'I', 'F', '[NH4+]',
+                                                   'BrB(Br)Br', 'Cl[Al](Cl)Cl', 'Br[Al](Br)Br')])
         is_carbon_acid = (Fragments.fr_COO(graph) > 0) and (
                 len(set([i for i in smi if i.isalpha()]) - {'C', 'O'}) == 0) and ("-" not in smi)
         return is_acid_deriv or is_standard_acid or is_carbon_acid
