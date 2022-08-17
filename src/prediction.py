@@ -42,6 +42,7 @@ class MTPredictor:
                    "-max_length", str(self.max_length),
                    "-beam_size", str(self.beam_size),
                    "-n_best", str(self.beam_size),
+                   "-log_probs",
                    "-replace_unk",
                    "-fast"]
         if self.gpu is not None:
@@ -55,7 +56,11 @@ class MTPredictor:
             pred = f.readlines()
         pred = [i.strip().replace(" ", "") for i in pred]
         pred = pd.DataFrame(np.array(pred).reshape(-1, self.beam_size))
-        return pred
+        with open(self.output_path + "_log_probs") as f:
+            probs = f.readlines()
+        probs = [np.exp(float(i)) for i in probs]
+        probs = pd.DataFrame(np.array(probs).reshape(-1, self.beam_size))
+        return pd.concat((pred, probs), axis=1)
 
     def predict(self, s: 'pd.Series'):
         input_tokens = s.apply(self._smi_tokenizer)
@@ -87,7 +92,9 @@ class MTProductPredictor(MTPredictor):
 
     def load_predictions(self):
         self.predictions = self._load_predictions()
-        self.predictions.columns = [f"p_products_{i + 1}" for i in range(self.beam_size)]
+        self.predictions.columns = [f"p_products_{i + 1}" for i in range(self.beam_size)] + [f"p_products_{i + 1}_conf"
+                                                                                             for i in
+                                                                                             range(self.beam_size)]
 
 
 class MTReagentPredictor(MTPredictor):
@@ -104,7 +111,9 @@ class MTReagentPredictor(MTPredictor):
 
     def load_predictions(self):
         self.predictions = self._load_predictions()
-        self.predictions.columns = [f"p_reagents_{i + 1}" for i in range(self.beam_size)]
+        self.predictions.columns = [f"p_reagents_{i + 1}" for i in range(self.beam_size)] + [f"p_reagents_{i + 1}_conf"
+                                                                                             for i in
+                                                                                             range(self.beam_size)]
 
     def suggestions_by_roles(self):
         bag_of_predictions = self.predictions.apply(lambda x: '.'.join(x), axis=1)
