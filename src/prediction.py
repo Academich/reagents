@@ -29,6 +29,7 @@ class MTPredictor:
         self.max_length = max_length
 
         self.predictions = None
+        self.pred_probs = None
 
     def _smi_tokenizer(self, smi):
         raise NotImplementedError
@@ -60,7 +61,7 @@ class MTPredictor:
             probs = f.readlines()
         probs = [np.exp(float(i)) for i in probs]
         probs = pd.DataFrame(np.array(probs).reshape(-1, self.beam_size))
-        return pd.concat((pred, probs), axis=1)
+        return pred, probs
 
     def predict(self, s: 'pd.Series'):
         input_tokens = s.apply(self._smi_tokenizer)
@@ -69,7 +70,9 @@ class MTPredictor:
         self._run_inference()
 
     def load_predictions(self):
-        self.predictions = self._load_predictions()
+        _pred, _probs = self._load_predictions()
+        self.predictions = _pred
+        self.pred_probs = _probs
 
 
 class MTProductPredictor(MTPredictor):
@@ -91,10 +94,9 @@ class MTProductPredictor(MTPredictor):
         return ' '.join(tokens)
 
     def load_predictions(self):
-        self.predictions = self._load_predictions()
-        self.predictions.columns = [f"p_products_{i + 1}" for i in range(self.beam_size)] + [f"p_products_{i + 1}_conf"
-                                                                                             for i in
-                                                                                             range(self.beam_size)]
+        super().load_predictions()
+        self.predictions.columns = [f"p_products_{i + 1}" for i in range(self.beam_size)]
+        self.pred_probs.columns = [f"p_products_{i + 1}_conf" for i in range(self.beam_size)]
 
 
 class MTReagentPredictor(MTPredictor):
@@ -106,17 +108,20 @@ class MTReagentPredictor(MTPredictor):
         self.tokenizer_source.load_vocabulary(vocabulary_path)
 
     def _smi_tokenizer(self, smi):
-        tokens = self.tokenizer_source.tokenize(smi)
-        return " ".join([j[1:-1][0] for j in tokens])
+        tokens = self.tokenizer_source.tokenize([smi])
+        return " ".join(tokens[0][1:-1])
 
     def load_predictions(self):
-        self.predictions = self._load_predictions()
-        self.predictions.columns = [f"p_reagents_{i + 1}" for i in range(self.beam_size)] + [f"p_reagents_{i + 1}_conf"
-                                                                                             for i in
-                                                                                             range(self.beam_size)]
+        super().load_predictions()
+        self.predictions.columns = [f"p_reagents_{i + 1}" for i in range(self.beam_size)]
+        self.pred_probs.columns = [f"p_reagents_{i + 1}_conf" for i in range(self.beam_size)]
 
-    def suggestions_by_roles(self):
+    def suggestions_by_roles(self, n_catal, n_solv, n_redox, n_unspec):
         bag_of_predictions = self.predictions.apply(lambda x: '.'.join(x), axis=1)
-        bag_of_predictions = bag_of_predictions.apply(HeuristicRoleClassifier.role_voting)
+        bag_of_predictions = bag_of_predictions.apply(lambda x: HeuristicRoleClassifier.role_voting(x,
+                                                                                                    n_catal,
+                                                                                                    n_solv,
+                                                                                                    n_redox,
+                                                                                                    n_unspec))
         return bag_of_predictions
 
