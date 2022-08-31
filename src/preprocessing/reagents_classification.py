@@ -92,19 +92,24 @@ class HeuristicRoleClassifier:
         return "&".join(cls.__join_species(reagents_smi))
 
     @classmethod
-    def role_voting(cls, regents_smi: str):
-        catal, ox, red, acid, base, solvent, unspec = cls.classify(regents_smi)
+    def role_voting(cls,
+                    regents_smi: str,
+                    n_catals: int,
+                    n_solv: int,
+                    n_redox: int,
+                    n_unspec: int):
+        catal, ox, red, acid, base, unspec, solvent = cls.classify(regents_smi)
         best_catals = '.'.join(
-            [i[0] for i in (Counter(catal) + Counter(acid) + Counter(base)).most_common(2)]
+            [i[0] for i in (Counter(catal) + Counter(acid) + Counter(base)).most_common(n_catals)]
         )
         best_solvents = '.'.join(
-            [i[0] for i in Counter(solvent).most_common(2)]
+            [i[0] for i in Counter(solvent).most_common(n_solv)]
         )
         best_redox = '.'.join(
-            [i[0] for i in (Counter(ox) + Counter(red)).most_common(2)]
+            [i[0] for i in (Counter(ox) + Counter(red)).most_common(n_redox)]
         )
         best_unspec = '.'.join(
-            [i[0] for i in Counter(unspec).most_common(2)]
+            [i[0] for i in Counter(unspec).most_common(n_unspec)]
         )
         return best_catals, best_redox, best_unspec, best_solvents
 
@@ -155,7 +160,10 @@ class HeuristicRoleClassifier:
             phos_deriv)) and "O-]" not in smi and any([i in _graph_with_h for i in ["O[H]", "[H]O"]])
 
         is_standard_acid = any([i == smi for i in ('Cl', 'Br', 'I', 'F', '[NH4+]',
-                                                   'BrB(Br)Br', 'Cl[Al](Cl)Cl', 'Br[Al](Br)Br')])
+                                                   'BrB(Br)Br',
+                                                   'BrP(Br)Br',
+                                                   'Cl[Al](Cl)Cl',
+                                                   'Br[Al](Br)Br')])
         is_carbon_acid = (Fragments.fr_COO(graph) > 0) and (
                 len(set([i for i in smi if i.isalpha()]) - {'C', 'O'}) == 0) and ("-" not in smi)
         return is_acid_deriv or is_standard_acid or is_carbon_acid
@@ -184,7 +192,7 @@ class HeuristicRoleClassifier:
         # Halogenating agents are oxidizing agents
 
         is_peroxide = "OO" in smi
-        is_nbs = smi == "O=C1CCC(=O)N1Cl"
+        is_nbs = smi == "O=C1CCC(=O)N1Br"
         is_chlorinator = any([i == smi for i in ('O=S(Cl)Cl', 'O=C(Cl)C(=O)Cl')])
         is_standard = any([i == smi for i in ('ClCl', 'BrBr', 'II', 'FF', 'O=O', 'O=[O+][O-]')])
         is_metal_ox = smi.count("O") >= 2 and any([i in smi for i in ("Os", "Re", "Ru", "Pt", "Pd", "Ir")])
@@ -202,5 +210,7 @@ class HeuristicRoleClassifier:
 
 
 if __name__ == '__main__':
-    sm = "[AlH4-].[OH-].[Na+].[Li+].CCOCC"
-    print(HeuristicRoleClassifier.rearrange_reagents(sm))
+    sm = "[Pd].CO.[Pd].[H][H].CO.[Pd].CCO.[Pd].[H][H].CCO.[Pd+2].[OH-].[OH-].CO"
+    print(HeuristicRoleClassifier.is_solvent("CO"))
+    print(HeuristicRoleClassifier.classify_to_str(sm))
+    print(HeuristicRoleClassifier.role_voting(sm, 1, 1, 1, 2))
