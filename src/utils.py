@@ -252,7 +252,8 @@ def order_molecules(smi: str) -> str:
 
 def fix_charcoal(smi: str) -> str:
     left, center, right = smi.split(">")
-    not_left = center + ">" + right
+    _center = sorted(center.split("."), key=len, reverse=True)
+    not_left = ".".join(_center) + ">" + right
     if ".C>" in not_left and ("[Pd]" in center or "[H][H]" in center):
         return left + ">" + not_left.replace(".C>", ".[C]>")
     return smi
