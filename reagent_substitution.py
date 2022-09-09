@@ -120,7 +120,7 @@ def get_files_for_forward_prediction(path, subset: str, reag_predictor: 'MTReage
     # === in all roles are those that are repeated the most across all predictions
     # === from top-1 to top-5
     # ===============================================================================
-    data["rgs_role_voting"] = reag_predictor.suggestions_by_roles()
+    data["rgs_role_voting"] = reag_predictor.suggestions_by_roles(n_catal=2, n_solv=2, n_redox=1, n_unspec=2)
     data["rgs_role_voting"] = data["rgs_role_voting"].apply(lambda x: ".".join([i for i in x if i]))
     data["rxn_reagents_role_voting"] = data[["rxn_no_reagents",
                                              "rgs_role_voting"]].apply(lambda x: include_reagents(*x), axis=1)
