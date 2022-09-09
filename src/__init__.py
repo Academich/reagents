@@ -1,3 +1,6 @@
 from pathlib import Path
 
-translate_script_path = str(Path.cwd().parent / "translate.py")
+parts = Path.cwd().parts
+parts = parts[:parts.index("reagents")]
+root = Path(*parts) / "reagents"
+translate_script_path = str(root / "translate.py")
