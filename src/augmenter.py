@@ -5,10 +5,10 @@ from src.pysmilesutils.pysmilesutils_augmenter import SMILESAugmenter
 import numpy as np
 
 
-def augment_rxn(augmenter: 'SMILESAugmenter', smi: str) -> List[str]:
+def augment_rxn(augmenter: 'SMILESAugmenter', augment_roles: bool, smi: str) -> List[str]:
     np.random.seed(123456)
 
-    num_augmentations = np.random.choice(range(1, 4 + 1), p=[0.4, 0.3, 0.2, 0.1])
+    num_augmentations = np.random.choice(range(1, 4 + 1), p=[0.3, 0.3, 0.3, 0.1])
 
     left, center, right = smi.split(">")
     left_smiles = left.split('.')
@@ -21,11 +21,11 @@ def augment_rxn(augmenter: 'SMILESAugmenter', smi: str) -> List[str]:
         _left_smi_augm = '.'.join([augmenter(s for s in left_smiles)].pop())
         _right_smi_augm = '.'.join([augmenter(s for s in right_smiles).pop()])
 
-        if n_agents > 1:
+        if n_agents > 1 and augment_roles:
             idx_of_reagents_to_move = random.sample(range(n_agents),
                                                     np.random.choice(range(0, n_agents),
-                                                                     p=[0.65] + (n_agents - 1) * [
-                                                                         0.35 / (n_agents - 1)]))
+                                                                     p=[0.60] + (n_agents - 1) * [
+                                                                         0.40 / (n_agents - 1)]))
             center_smiles_moved = [center_smiles[i] for i in idx_of_reagents_to_move]
             center_smiles_moved = '.'.join(center_smiles_moved)
             center_smiles_intact = [center_smiles[i] for i in range(n_agents) if i not in idx_of_reagents_to_move]
@@ -49,5 +49,5 @@ if __name__ == '__main__':
     print(d)
     print()
     print(
-        d['smi'].apply(partial(augment_rxn, smiles_randomizer)).explode('smi').values
+        d['smi'].apply(partial(augment_rxn, smiles_randomizer, True)).explode('smi').values
     )
