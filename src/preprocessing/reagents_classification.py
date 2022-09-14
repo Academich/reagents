@@ -205,8 +205,9 @@ class HeuristicRoleClassifier:
         # Some standard molecules are reducing agents
         is_boron_hydride = "[BH" in smi
         is_aluminium_hydride = "[AlH" in smi
+        is_organosylicon = "[SiH" in smi
         is_standard = any([j == smi for j in ("[H][H]", "B", "NN", "Cl[Sn]Cl", "[S-2]", "O=[PH2]O")])
-        return is_standard or is_aluminium_hydride or is_boron_hydride
+        return is_standard or is_aluminium_hydride or is_boron_hydride or is_organosylicon
 
 
 if __name__ == '__main__':
