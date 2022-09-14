@@ -33,12 +33,10 @@ def main(args):
         ut.drop_cxsmiles_info,
         ut.mix_reagents,
         ut.assign_reaction_roles_schneider,
-        ut.drop_atom_mapping,
+        ut.canonical_remove_aam_rxn,
         ut.drop_isotopes,
-        ut.fix_charcoal,
-        ut.assemble_ions,
-        ut.order_molecules,
-        ut.canonicalize_reaction
+        ut.disassemble_pd_pph3,
+        ut.order_molecules
     ]
 
     if args.keep_only_unique_molecules:
@@ -54,6 +52,13 @@ def main(args):
                                                        pipeline.run,
                                                        num_of_processes=args.cpu_count)
     assert len(data[data.ProcessedReaction.str.startswith("!")]) == 0
+
+    # === Removing reactions with more than 10 unique molecules on the left side of a reaction
+    long_reactions = data[data["ProcessedReaction"].apply(lambda x: len(set(x.split(">>")[0].split("."))) > 10)]
+    logging.info(f"Removing {len(long_reactions)} too long reactions")
+    data.drop(long_reactions.index, inplace=True)
+    # ===
+
     roles = data["ProcessedReaction"].str.split(">", expand=True)
     roles.columns = ["Reactants", "Reagents", "Products"]
 
