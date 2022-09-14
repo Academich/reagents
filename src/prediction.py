@@ -17,6 +17,7 @@ class MTPredictor:
                  tokenized_path: str,
                  output_path: str,
                  beam_size: int = 5,
+                 n_best: int = 5,
                  gpu: Optional[int] = None,
                  batch_size: int = 64,
                  max_length: int = 200):
@@ -24,6 +25,7 @@ class MTPredictor:
         self.tokenized_path = tokenized_path
         self.output_path = output_path
         self.beam_size = beam_size
+        self.n_best = n_best
         self.gpu = gpu
         self.batch_size = batch_size
         self.max_length = max_length
@@ -42,7 +44,7 @@ class MTPredictor:
                    "-batch_size", str(self.batch_size),
                    "-max_length", str(self.max_length),
                    "-beam_size", str(self.beam_size),
-                   "-n_best", str(self.beam_size),
+                   "-n_best", str(self.n_best),
                    "-log_probs",
                    "-replace_unk",
                    "-fast"]
@@ -56,11 +58,14 @@ class MTPredictor:
         with open(self.output_path) as f:
             pred = f.readlines()
         pred = [i.strip().replace(" ", "") for i in pred]
-        pred = pd.DataFrame(np.array(pred).reshape(-1, self.beam_size))
-        with open(self.output_path + "_log_probs") as f:
-            probs = f.readlines()
-        probs = [np.exp(float(i)) for i in probs]
-        probs = pd.DataFrame(np.array(probs).reshape(-1, self.beam_size))
+        pred = pd.DataFrame(np.array(pred).reshape(-1, self.n_best))
+        try:
+            with open(self.output_path + "_log_probs") as f:
+                probs = f.readlines()
+            probs = [np.exp(float(i)) for i in probs]
+            probs = pd.DataFrame(np.array(probs).reshape(-1, self.n_best))
+        except FileNotFoundError:
+            probs = None
         return pred, probs
 
     def predict(self, s: 'pd.Series'):
@@ -95,8 +100,9 @@ class MTProductPredictor(MTPredictor):
 
     def load_predictions(self):
         super().load_predictions()
-        self.predictions.columns = [f"p_products_{i + 1}" for i in range(self.beam_size)]
-        self.pred_probs.columns = [f"p_products_{i + 1}_conf" for i in range(self.beam_size)]
+        self.predictions.columns = [f"p_products_{i + 1}" for i in range(self.n_best)]
+        if self.pred_probs is not None:
+            self.pred_probs.columns = [f"p_products_{i + 1}_conf" for i in range(self.n_best)]
 
 
 class MTReagentPredictor(MTPredictor):
@@ -113,8 +119,8 @@ class MTReagentPredictor(MTPredictor):
 
     def load_predictions(self):
         super().load_predictions()
-        self.predictions.columns = [f"p_reagents_{i + 1}" for i in range(self.beam_size)]
-        self.pred_probs.columns = [f"p_reagents_{i + 1}_conf" for i in range(self.beam_size)]
+        self.predictions.columns = [f"p_reagents_{i + 1}" for i in range(self.n_best)]
+        self.pred_probs.columns = [f"p_reagents_{i + 1}_conf" for i in range(self.n_best)]
 
     def suggestions_by_roles(self, n_catal, n_solv, n_redox, n_unspec):
         bag_of_predictions = self.predictions.apply(lambda x: '.'.join(x), axis=1)
