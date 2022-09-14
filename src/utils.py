@@ -61,8 +61,7 @@ def assign_reaction_roles_by_aam(smi: str) -> str:
     pattern = re.compile(":(\d+)\]")  # atom map numbers
     reactants, reagents = [], []
     left, center, right = smi.split(">")
-
-    all_rs = left.split(".") + center.split(".")
+    all_rs = [i for i in left.split(".") + center.split(".") if i]
     right_mols_set = set(right.split("."))
     for m in all_rs:
         if m in right_mols_set:
@@ -208,8 +207,36 @@ def separate_molecule_tokens(lst: List[int], sep: int) -> List[int]:
     return out
 
 
+def disassemble_pd_pph3(smi: str) -> str:
+    """
+    Replaces a Pd(PPh3)4 molecule with 5 separate species - one Pd and four PPh3
+    :param smi:
+    :return:
+    """
+    united = "c1ccc([PH](c2ccccc2)(c2ccccc2)[Pd]([PH](c2ccccc2)(c2ccccc2)c2ccccc2)([PH](c2ccccc2)(c2ccccc2)c2ccccc2)[PH](c2ccccc2)(c2ccccc2)c2ccccc2)cc1"
+    split = "[Pd].c1ccc(P(c2ccccc2)c2ccccc2)cc1.c1ccc(P(c2ccccc2)c2ccccc2)cc1.c1ccc(P(c2ccccc2)c2ccccc2)cc1.c1ccc(P(c2ccccc2)c2ccccc2)cc1"
+    return smi.replace(united, split)
+
+
+def canonical_remove_aam_mol(smi: str) -> str:
+    """
+    Removes atom mapping from a Mol object using RDKit
+    :param smi:
+    :return: Canonicalized SMILES with no atom mapping
+    """
+    mol = Chem.MolFromSmiles(smi)
+    [a.SetAtomMapNum(0) for a in mol.GetAtoms()]
+    return Chem.MolToSmiles(mol, canonical=True, isomericSmiles=True)
+
+
+def canonical_remove_aam_rxn(smi: str) -> str:
+    left, center, right = smi.split(">")
+    return canonical_remove_aam_mol(left) + ">" + canonical_remove_aam_mol(center) + ">" + canonical_remove_aam_mol(
+        right)
+
+
 def drop_cxsmiles_info(smi: str) -> str:
-    return smi.split("|")[0]
+    return smi.split("|")[0].strip()
 
 
 def keep_only_unique_molecules(smi: str) -> str:
@@ -469,13 +496,5 @@ def parallelize_on_rows(d: Series, func, num_of_processes: int, use_tqdm=False) 
 
 
 if __name__ == '__main__':
-    problems = ["C1=CC=CC=C1.CC[Al+2].CC[Al+2].[Cl-].[Cl-].[Cl-].[Cl-].O",
-                "CC(C[Al+]CC(C)C)C.CC(C)C[Al+]CC(C)C.O=S(=O)(O)O.C(CCC)CC.C1CCOC1.CCCCCC.CCOCC.[H-].[H-]",
-                "C1=CC([Ti+2]C2C=CC=C2)C=C1.C1CN2CCN1CC2.CC[Al+2].[Cl-].[Cl-].[Cl-].[Cl-]",
-                "CC(C)C[Al+]CC(C)C.CC(C)C[Al+]CC(C)C.CC1=CC=CC=C1.CC1=CC=CC=C1.[H-].[H-].CO.O",
-                "ClC(Cl)(Cl)Cl.ClC(Cl)(Cl)Cl.[Al+3].[Al+3].[Cl-].[Cl-].[Cl-].[Cl-].[Cl-].[Cl-].Cl",
-                "CC(C)C[Al+]CC(C)C.CCCC[Al+]CCCC.CC1=CC=CC=C1.CCOC(C)=O.[H-].[H-].O",
-                "[Zn+2].[Al+3].ClCCCl.[Cl-].[Cl-].[Cl-].[Cl-].[Cl-]"]
-    s1 = "[Al+].[H-].[Cl-]"
-    res = IonAssembler.run("ClC(Cl)(Cl)Cl.ClC(Cl)(Cl)Cl.[Al+3].[Al+3].[Cl-].[Cl-].[Cl-].[Cl-].[Cl-].[Cl-].Cl")
-    print(res)
+    print(assign_reaction_roles_by_aam(
+        "Br[CH2:2][C:3]1[C:15]2[CH2:14][C:13]3[C:8](=[CH:9][CH:10]=[CH:11][CH:12]=3)[C:7]=2[CH:6]=[CH:5][CH:4]=1.O.C1COCC1>>[C:3]1([CH2:2][CH2:2][C:3]2[C:15]3[CH2:14][C:13]4[C:8](=[CH:9][CH:10]=[CH:11][CH:12]=4)[C:7]=3[CH:6]=[CH:5][CH:4]=2)[C:15]2[CH2:14][C:13]3[C:8](=[CH:9][CH:10]=[CH:11][CH:12]=3)[C:7]=2[CH:6]=[CH:5][CH:4]=1"))
