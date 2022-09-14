@@ -123,7 +123,9 @@ def main(args):
         smiles_randomizer = SMILESAugmenter(restricted=True)
         logging.info("Augmenting reactions...")
         data["ProcessedReaction"] = ut.parallelize_on_rows(data["ProcessedReaction"],
-                                                           partial(augment_rxn, smiles_randomizer),
+                                                           partial(augment_rxn,
+                                                                   smiles_randomizer,
+                                                                   args.use_role_augmentations),
                                                            num_of_processes=args.cpu_count)
         data = data.explode("ProcessedReaction")
         data.reset_index(drop=True, inplace=True)
@@ -253,7 +255,11 @@ if __name__ == '__main__':
     group_prep.add_argument("--use_special_tokens", action="store_true",
                             help="Use special tokens: long frequent reagents get a special token, "
                                  "standard solvents get special token each.")
-    group_prep.add_argument("--use_augmentations", action="store_true", help="Whether to augment reaction SMILES.")
+    group_prep.add_argument("--use_augmentations", action="store_true",
+                            help="Whether to augment reactions using SMILES augmentations.")
+    group_prep.add_argument("--use_role_augmentations", action="store_true",
+                            help="Whether to augment reaction SMILES by moving random reagents to the reactant side. "
+                                 "Only makes sense if --use_augmentations is used.")
     group_prep.add_argument("--min_reagent_occurances", type=int, default=None,
                             help="If not None, all reagent with number of occurrences less than this "
                                  "number will be removed.")
