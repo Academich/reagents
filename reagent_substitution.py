@@ -1,4 +1,3 @@
-import sys
 from pathlib import Path
 from multiprocessing import cpu_count
 from argparse import ArgumentParser
@@ -123,10 +122,10 @@ def get_files_for_forward_prediction(path,
     data["src_reagents_top1_and_rdkit"] = np.nan
 
     needs_replacement = (data["rgs_rdkit"].apply(num_mols) < data["rgs_top1"].apply(num_mols)) & (
-                data["rgs_top1"].apply(ut.canonicalize_smiles) != '')
+            data["rgs_top1"].apply(ut.canonicalize_smiles) != '')
     replace_idx = data[needs_replacement].index
     print(f"Reactions altered in top1+rdkit strategy: {len(replace_idx)} ({(100 * len(replace_idx)) / len(data):.2f}%)")
-    print("Examples of reactions with replaced reagents:")
+    print("Examples of indexes of reactions with replaced reagents:")
     print(replace_idx[:100])
     leave_idx = data[~needs_replacement].index
 
@@ -182,13 +181,14 @@ if __name__ == '__main__':
     path = Path(args.data_dir).resolve()
 
     subsets = [
-        # "train",
+        "train",
         "val"
     ]
     if args.including_test:
         subsets.append("test")
 
     for subset in subsets:
+        print(f"Processing {subset}...")
         reag_predictor = MTReagentPredictor(vocabulary_path=args.reagent_model_vocab,
                                             model_path=args.reagent_model,
                                             tokenized_path=f"data/test/{path.name.lower()}_no_reagents_{subset}.txt",
