@@ -2,6 +2,7 @@ name: reagents_pred
 channels:
   - rdkit
   - pytorch
+  - intel
   - conda-forge
   - defaults
 dependencies:
@@ -28,7 +29,7 @@ dependencies:
   - ca-certificates=2022.6.15=ha878542_0
   - cachetools=4.2.2=pyhd3eb1b0_0
   - cairo=1.16.0=h19f5f5c_2
-  - certifi=2021.5.30=py36h06a4308_0
+  - certifi=2021.5.30=py36h5fab9bb_0
   - cffi=1.14.6=py36h400218f_0
   - chardet=4.0.0=py36h06a4308_1003
   - charset-normalizer=2.0.4=pyhd3eb1b0_0
@@ -38,6 +39,9 @@ dependencies:
   - cryptography=3.4.7=py36hd23ed53_0
   - cudatoolkit=10.2.89=hfd86e86_1
   - cycler=0.11.0=pyhd3eb1b0_0
+  - daal=2021.5.3=intel_832
+  - daal4py=2021.5.3=py36_intel_832
+  - dal=2021.5.3=intel_832
   - dataclasses=0.8=pyh4f3eec9_6
   - dbus=1.13.18=hb2f20db_0
   - decorator=5.1.1=pyhd3eb1b0_0
@@ -57,12 +61,14 @@ dependencies:
   - gstreamer=1.14.0=h28cd5cc_2
   - h5py=2.10.0=py36hd6299e0_1
   - hdf5=1.10.6=hb1b8bf9_0
+  - icc_rt=2020.3=intel_304
   - icu=58.2=he6710b0_3
   - idna=3.3=pyhd3eb1b0_0
   - idna_ssl=1.1.0=py36h06a4308_0
   - immutables=0.16=py36h7f8727e_0
   - importlib-metadata=4.8.1=py36h06a4308_0
   - intel-openmp=2022.0.1=h06a4308_3633
+  - intelpython=2022.1.0=0
   - ipykernel=5.3.4=py36h5ca1d4c_0
   - ipython=7.16.1=py36h5ca1d4c_0
   - ipython_genutils=0.2.0=pyhd3eb1b0_1
@@ -121,7 +127,8 @@ dependencies:
   - oauthlib=3.2.0=pyhd3eb1b0_0
   - olefile=0.46=py36_0
   - openjpeg=2.4.0=h3ad879b_0
-  - openssl=1.1.1l=h7f98852_0
+  - openssl=1.1.1o=h166bdaf_0
+  - opentsne=0.6.0=py36h88613d6_1
   - opt_einsum=3.3.0=pyhd3eb1b0_1
   - packaging=21.3=pyhd3eb1b0_0
   - pandas=1.1.5=py36ha9443f7_0
@@ -151,6 +158,7 @@ dependencies:
   - pysocks=1.7.1=py36h06a4308_0
   - python=3.6.13=h12debd9_1
   - python-dateutil=2.8.2=pyhd3eb1b0_0
+  - python_abi=3.6=2_cp36m
   - pytorch=0.4.1=py36_py35_py27__9.0.176_7.1.2_2
   - pytz=2021.3=pyhd3eb1b0_0
   - pyu2f=0.1.5=pyhd8ed1ab_0
@@ -161,6 +169,7 @@ dependencies:
   - requests=2.27.1=pyhd3eb1b0_0
   - requests-oauthlib=1.3.0=py_0
   - rsa=4.7.2=pyhd3eb1b0_1
+  - scikit-learn=0.20.0=py36_17
   - scipy=1.5.2=py36h0b6359f_0
   - seaborn=0.11.2=pyhd3eb1b0_0
   - send2trash=1.8.0=pyhd3eb1b0_1
@@ -169,6 +178,7 @@ dependencies:
   - six=1.16.0=pyhd3eb1b0_1
   - sniffio=1.2.0=py36h06a4308_1
   - sqlite=3.38.5=hc218d9a_0
+  - tbb=2021.6.0=intel_835
   - tensorboard=2.4.0=pyhc547734_0
   - tensorboard-plugin-wit=1.6.0=py_0
   - tensorflow=2.2.0=mkl_py36h5a57954_0
@@ -198,5 +208,6 @@ dependencies:
   - zstd=1.4.9=haebb681_0
   - pip:
     - importlib-resources==5.4.0
+    - joblib==1.1.0
     - tensorboardx==1.8
     - torchtext==0.3.1
