@@ -1,3 +1,4 @@
+import shutil
 from pathlib import Path
 from multiprocessing import cpu_count
 from argparse import ArgumentParser
@@ -95,6 +96,7 @@ def get_files_for_forward_prediction(path,
         h.write(
             "\n".join(reactants.apply(tokenizer))
         )
+    shutil.copy(path / f"tgt-{subset}.txt", direct / f"tgt-{subset}.txt")
 
     # ===============================================================================
     # === Strategy 1: Replace reagents with top-1 reagent prediction in all cases
@@ -112,6 +114,7 @@ def get_files_for_forward_prediction(path,
         h.write(
             "\n".join(data["src_reagents_top1"].apply(tokenizer))
         )
+    shutil.copy(path / f"tgt-{subset}.txt", direct / f"tgt-{subset}.txt")
 
     # ===============================================================================
     # === Strategy 2: Replace reagents with top-1 reagent prediction if there are more
@@ -138,7 +141,7 @@ def get_files_for_forward_prediction(path,
         h.write(
             "\n".join(data["src_reagents_top1_and_rdkit"].apply(tokenizer))
         )
-
+    shutil.copy(path / f"tgt-{subset}.txt", direct / f"tgt-{subset}.txt")
     # ===============================================================================
     # === Strategy 3: Replace reagents with predicted strings in which the reagents
     # === in all roles are those that are repeated the most across all predictions
@@ -160,6 +163,7 @@ def get_files_for_forward_prediction(path,
         h.write(
             "\n".join(data["src_reagents_role_voting"].apply(tokenizer))
         )
+    shutil.copy(path / f"tgt-{subset}.txt", direct / f"tgt-{subset}.txt")
 
 
 if __name__ == '__main__':
