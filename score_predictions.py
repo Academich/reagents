@@ -4,8 +4,10 @@
 from __future__ import division, unicode_literals
 import argparse
 from rdkit import Chem
+from rdkit import RDLogger
 import pandas as pd
 import onmt.opts
+
 
 def canonicalize_smiles(smiles):
     mol = Chem.MolFromSmiles(smiles)
@@ -14,11 +16,13 @@ def canonicalize_smiles(smiles):
     else:
         return ''
 
+
 def get_rank(row, base, max_rank):
-    for i in range(1, max_rank+1):
+    for i in range(1, max_rank + 1):
         if row['target'] == row['{}{}'.format(base, i)]:
             return i
     return 0
+
 
 def main(opt):
     with open(opt.targets, 'r') as f:
@@ -43,31 +47,31 @@ def main(opt):
 
     correct = 0
 
-    for i in range(1, opt.beam_size+1):
+    for i in range(1, opt.beam_size + 1):
         correct += (test_df['rank'] == i).sum()
         invalid_smiles = (test_df['canonical_prediction_{}'.format(i)] == '').sum()
         if opt.invalid_smiles:
-            print('Top-{}: {:.1f}% || Invalid SMILES {:.2f}%'.format(i, correct/total*100,
-                                                                     invalid_smiles/total*100))
+            print('Top-{}: {:.3f}% || Invalid SMILES {:.2f}%'.format(i, correct / total * 100,
+                                                                     invalid_smiles / total * 100))
         else:
-            print('Top-{}: {:.1f}%'.format(i, correct / total * 100))
-
+            print('Top-{}: {:.3f}%'.format(i, correct / total * 100))
 
 
 if __name__ == "__main__":
+    RDLogger.DisableLog('rdApp.*')
     parser = argparse.ArgumentParser(
         description='score_predictions.py',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     onmt.opts.add_md_help_argument(parser)
 
     parser.add_argument('-beam_size', type=int, default=5,
-                       help='Beam size')
+                        help='Beam size')
     parser.add_argument('-invalid_smiles', action="store_true",
-                       help='Show % of invalid SMILES')
+                        help='Show % of invalid SMILES')
     parser.add_argument('-predictions', type=str, default="",
-                       help="Path to file containing the predictions")
+                        help="Path to file containing the predictions")
     parser.add_argument('-targets', type=str, default="",
-                       help="Path to file containing targets")
+                        help="Path to file containing targets")
 
     opt = parser.parse_args()
     main(opt)
