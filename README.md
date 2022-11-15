@@ -4,6 +4,7 @@ The repository is effectively a fork of the [Molecular Transformer](https://gith
 
 Idea:
   * Train a transformer to predict reagents for organic reactions in the way of SMILES-to-SMILES translation.
+  ![](reactants_vs_reagents.png "")
   * Infer missing reagents for some reactions in the training set.
   * Train a transformer for reaction product prediction on the dataset with improved reagents.
 
