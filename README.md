@@ -1,7 +1,15 @@
 # Molecular Transformer for Reagents Prediction
-
+This is the code for the preprint [Reagent Prediction with a Molecular Transformer Improves Reaction Data Quality](https://doi.org/10.26434/chemrxiv-2022-sn2kr).  
 The repository is effectively a fork of the [Molecular Transformer](https://github.com/pschwllr/MolecularTransformer).  
 
+Idea:
+  * Train a transformer to predict reagents for organic reactions in the way of SMILES-to-SMILES translation.
+  * Infer missing reagents for some reactions in the training set.
+  * Train a transformer for reaction product prediction on the dataset with improved reagents.
+
+# Code
+### Old files:
+`onmt` is a directory with the OpenNMT code.
 ### New files: 
 `src` folder contains preprocessing for reagent prediction.  
 `prepare_data.py` is the main script that preprocesses USPTO for reagents prediction with MT.  
