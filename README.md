@@ -24,6 +24,8 @@ The training set for reagents prediction was obtained from it using the `prepare
 
 The tokenized data for product prediction is stored [here](https://ibm.box.com/v/MolecularTransformerData). For the description of these data, please refer to the README of the original [Molecular Transformer](https://github.com/pschwllr/MolecularTransformer).
 
+The data for product prediction with altered reagents can be downloaded [here](https://drive.google.com/drive/folders/1Cr8AsAIYSGaXJuBnlVflBax3ZbEbq89s?usp=sharing).
+
 ## Workflow
  1. Create a conda environment from the specification file:
     ```bash
@@ -72,7 +74,8 @@ The tokenized data for product prediction is stored [here](https://ibm.box.com/v
                                         --beam_size 5 --gpu 0
     ```
     `MODEL_NAME` may be stored, in `experiments/checkpoints/`.
-    `MODEL_SRC_VOCAB` (a .json file )may be stored in `data/vocabs/`.
+    `MODEL_SRC_VOCAB` (a .json file )may be stored in `data/vocabs/`.  
+    Or download the final data [here](https://drive.google.com/drive/folders/1Cr8AsAIYSGaXJuBnlVflBax3ZbEbq89s?usp=sharing).
     
   7. Train product prediction models on datasets cleaned by a reagents prediction model like in step 5.   
     
