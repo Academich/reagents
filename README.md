@@ -78,8 +78,18 @@ The data for product prediction with altered reagents can be downloaded [here](h
     Or download the final data [here](https://drive.google.com/drive/folders/1Cr8AsAIYSGaXJuBnlVflBax3ZbEbq89s?usp=sharing).
     
   7. Train product prediction models on datasets cleaned by a reagents prediction model like in step 5.   
-    
-    
+
+## Inference
+To make predictions for reactions supplied in a .txt file as SMILES, use the following script:
+
+    ```bash
+        python3 translate.py -model <PATH TO THE MODEL WEIGHTS> \
+                    -src <PATH TO THE TEST REACTIONS WITHOUT REAGENTS> \
+                    -output <PATH TO THE .TXT FILE WHERE THE PREDICTIONS WILL BE STORED> \
+                    -batch_size 64 -replace_unk -max_length 200 -fast -beam_size 5 -n_best 5 -gpu <GPU ID>
+    ```
+The supplied reactions should be tokenized with tokens separated by spaces, like in files produced by `prepare_data.py`.
+
 ## Citation
 The preprint: 
 ```
