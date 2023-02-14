@@ -79,6 +79,8 @@ The data for product prediction with altered reagents can be downloaded [here](h
     
   7. Train product prediction models on datasets cleaned by a reagents prediction model like in step 5.   
 
+The trained reagent and product models in the forms of `.pt` files are stored [here](https://drive.google.com/drive/folders/1weP5wG_wzd9qb3RVnCz0JjyB-TJF-5yQ).
+
 ## Inference
 To make predictions for reactions supplied in a .txt file as SMILES, use the following script:
 
