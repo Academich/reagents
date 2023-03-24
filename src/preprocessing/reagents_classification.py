@@ -117,6 +117,9 @@ class HeuristicRoleClassifier:
     def is_solvent(cls, smi: str) -> bool:
         return smi in cls.solvents
 
+    # TODO Move standard dehydrogenating molecules (DEAD, DCC) to oxidizers
+    # TODO Add heavy non-metals (Se, Te) to catalysts
+
     @classmethod
     def is_catalyst(cls, smi: str) -> bool:
         # Single metals are catalysts
