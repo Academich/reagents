@@ -7,7 +7,7 @@ from src.prediction import MTReagentPredictor, MTProductPredictor
 
 
 def predict_reagents(cliargs: Namespace) -> None:
-    src_data = pd.read_csv(cliargs.data, header=None)
+    src_data = pd.read_csv(cliargs.data, header=None)[0]
     reagent_predictor = MTReagentPredictor(
         vocabulary_path=cliargs.vocab,
         model_path=cliargs.model,
@@ -26,7 +26,7 @@ def predict_reagents(cliargs: Namespace) -> None:
 
 
 def predict_products(cliargs: Namespace) -> None:
-    src_data = pd.read_csv(cliargs.data, header=None)
+    src_data = pd.read_csv(cliargs.data, header=None)[0]
     product_predictor = MTProductPredictor(
         model_path=cliargs.model,
         tokenized_path=str(
@@ -51,7 +51,7 @@ if __name__ == '__main__':
                         help="Path to the untokenized input data")
     parser.add_argument("--model", "-m", type=str, required=True,
                         help="Path to the weights of the model")
-    parser.add_argument("--vocab", "-v", type=str, required=True,
+    parser.add_argument("--vocab", "-v", type=str,
                         help="Path to the model's vocabulary")
     parser.add_argument("--name", type=str, default="inference",
                         help="Name of the run")
