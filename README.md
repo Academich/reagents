@@ -32,6 +32,13 @@ The data for product prediction with altered reagents can be downloaded [here](h
     conda env create -f environment.yml
     conda activate reagents_pred
     ```
+    Install pytorch separately:
+    ```bash
+    wget https://download.pytorch.org/whl/cu92/torch-0.4.1-cp36-cp36m-linux_x86_64.whl
+    pip install torch-0.4.1-cp36-cp36m-linux_x86_64.whl
+    rm torch-0.4.1-cp36-cp36m-linux_x86_64.whl
+    pip install torchtext==0.3.1
+    ```
  2. Download the datasets and put them in the `data/tokenized` directory.
 
  3. Train a reagents prediction model:
