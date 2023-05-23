@@ -1,5 +1,5 @@
 # Molecular Transformer for Reagents Prediction
-This is the code for the preprint [Reagent Prediction with a Molecular Transformer Improves Reaction Data Quality](https://doi.org/10.26434/chemrxiv-2022-sn2kr).  
+This is the code for the paper [Reagent Prediction with a Molecular Transformer Improves Reaction Data Quality](https://doi.org/10.1039/D2SC06798F).  
 The repository is effectively a fork of the [Molecular Transformer](https://github.com/pschwllr/MolecularTransformer).  
 
 Idea:
