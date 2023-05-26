@@ -93,11 +93,11 @@ def _extract_isotope(term) -> str:
     isotope_group = labeled_atom_group.strip("[]")
     for i, c in enumerate(isotope_group):
         if c.isalpha():
-            return Chem.MolToSmiles(Chem.MolFromSmiles("[{}]".format(isotope_group[i:])))
+            return "[{}]".format(isotope_group[i:])
 
 
 def drop_isotopes(smi: str) -> str:
-    isotope_template = re.compile('\[[0-9]+[a-zA-Z0-9]+]')
+    isotope_template = re.compile('\[[0-9]+[a-zA-Z0-9@]+]')
     res = re.sub(isotope_template, _extract_isotope, smi)
     return res
 
