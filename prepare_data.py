@@ -194,32 +194,47 @@ def main(args):
         t_target.add_tokens(long_tokens, regex=False)
 
     # === 7. Preparing and saving files for OpenNMT ===
-    _mode = "train" if args.train else "val"
-    save_path = Path("data/tokenized").resolve() / args.output_suffix
+    save_path = Path("data/tokenized").resolve() / args.output_dir
     save_path.mkdir(parents=True, exist_ok=True)
-    save_path_src_tokd = (save_path / "src-{}".format(_mode)).with_suffix(".txt")
-    save_path_tgt_tokd = (save_path / "tgt-{}".format(_mode)).with_suffix(".txt")
 
-    tokenized_domain = t_source.tokenize(domain.values.flatten().tolist())
-    tokenized_domain = "\n".join([" ".join(j[1:-1]) for j in tokenized_domain])
-    with open(save_path_src_tokd, "w") as f:
-        f.write(tokenized_domain)
-    logging.info("OpenNMT input source saved in %s" % save_path_src_tokd)
+    data_train_roles = data_train["ProcessedReaction"].str.split(">", expand=True)
+    data_train_roles.columns = ["Reactants", "Reagents", "Products"]
+    data_train["domain"] = data_train_roles["Reactants"] + ">>" + data_train_roles["Products"]
+    data_train["target"] = data_train_roles["Reagents"]
+    save_path_src_tokd = (save_path / "src-train").with_suffix(".txt")
+    data_train["domain"].apply(smi_tokenizer).to_csv(
+        save_path_src_tokd,
+        index=False,
+        header=False,
+    )
+    save_path_tgt_tokd = (save_path / "tgt-train").with_suffix(".txt")
+    data_train["target"].apply(smi_tokenizer).to_csv(
+        save_path_tgt_tokd,
+        index=False,
+        header=False,
+    )
+    logging.info("OpenNMT input train source saved in %s" % save_path_src_tokd)
+    logging.info("OpenNMT input train target saved in %s" % save_path_tgt_tokd)
 
-    if args.use_special_tokens:
-        tokenized_target = t_target.tokenize(data["Reagents"].values.flatten().tolist())
-        tokenized_target = [" ".join(j[1:-1]) for j in tokenized_target]
-        tokenized_target_solvents = list(data['Solvents'].apply(lambda x: x.replace(".", " . ")))
-        tokenized_target = [i + " . " * (len(i) > 0 and len(j) > 0) + j for i, j in
-                            zip(tokenized_target, tokenized_target_solvents)]
-    else:
-        tokenized_target = t_target.tokenize(target.values.flatten().tolist())
-        tokenized_target = [" ".join(j[1:-1]) for j in tokenized_target]
-
-    tokenized_target = "\n".join(tokenized_target)
-    with open(save_path_tgt_tokd, "w") as f:
-        f.write(tokenized_target)
-    logging.info("OpenNMT input target saved in %s" % save_path_tgt_tokd)
+    if data_val is not None:
+        data_val_roles = data_val["ProcessedReaction"].str.split(">", expand=True)
+        data_val_roles.columns = ["Reactants", "Reagents", "Products"]
+        data_val["domain"] = data_val_roles["Reactants"] + ">>" + data_val_roles["Products"]
+        data_val["target"] = data_val_roles["Reagents"]
+        save_path_src_tokd = (save_path / "src-val").with_suffix(".txt")
+        data_val["domain"].apply(smi_tokenizer).to_csv(
+            save_path_src_tokd,
+            index=False,
+            header=False,
+        )
+        save_path_tgt_tokd = (save_path / "tgt-val").with_suffix(".txt")
+        data_val["target"].apply(smi_tokenizer).to_csv(
+            save_path_tgt_tokd,
+            index=False,
+            header=False,
+        )
+        logging.info("OpenNMT input val source saved in %s" % save_path_src_tokd)
+        logging.info("OpenNMT input val target saved in %s" % save_path_tgt_tokd)
 
 
 if __name__ == '__main__':
@@ -244,11 +259,6 @@ if __name__ == '__main__':
                              help="Number of processes to use in parallelized functions.")
 
     group_prep = parser.add_argument_group("Preprocessing flags")
-    group_prep.add_argument("--keep_only_unique_molecules", action="store_true",
-                            help="Whether to remove repeated molecules from reactions.")
-    group_prep.add_argument("--use_special_tokens", action="store_true",
-                            help="Use special tokens: long frequent reagents get a special token, "
-                                 "standard solvents get special token each.")
     group_prep.add_argument("--use_augmentations", action="store_true",
                             help="Whether to augment reactions using SMILES augmentations.")
     group_prep.add_argument("--use_role_augmentations", action="store_true",
