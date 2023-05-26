@@ -22,9 +22,6 @@ RDLogger.DisableLog('rdApp.*')
 sys.path.append(RDConfig.RDContribDir)
 from RxnRoleAssignment import identifyReactants
 
-AAM_TEMPLATE = re.compile('\[[a-zA-Z0-9]+:[0-9]+]')
-RESIDUAL_AAM = re.compile(':[0-9]+')
-
 
 # === Reaction role assignment
 
