@@ -432,24 +432,21 @@ def separate_solvents(solvents_set: Set[str], smi: str) -> str:
 
 
 # === Reagent statistics
+def smi_mol_counter(smi_col: Series):
+    return smi_col.apply(lambda s: Counter(s.split("."))).sum()
 
-def get_reagent_statistics(reactions_left_side: Series, chunk_size: int = 1000):
+
+def get_reagent_statistics(smi_col: Series, chunk_size: int = 1000):
     """
     Obtain frequency of the molecular occurrence among the reactants/reagents of all reactions
     in the form of a Counter. Uses process pool for faster processing.
     :param: chunk_size: size of a subset of the data to process at once
     :returns: One counter with reagent occurrences for all reactions in the specified pandas Series.
     """
-    n_entries = reactions_left_side.shape[0]
-    global sum_counters
-
-    _individual_counters = reactions_left_side.apply(lambda smi: Counter(smi.split(".")))
-
-    def sum_counters(i):
-        return np.sum(_individual_counters[i: i + chunk_size])
+    n_entries = smi_col.shape[0]
 
     with Pool(cpu_count()) as p:
-        bigger_counters = p.map(sum_counters, range(0, n_entries, chunk_size))
+        bigger_counters = p.map(smi_mol_counter, [smi_col[i: i + chunk_size] for i in range(0, n_entries, chunk_size)])
 
     return np.sum(bigger_counters)
 
