@@ -11,8 +11,8 @@ import pandas as pd
 from rdkit import RDLogger
 
 import src.utils as ut
-from src.preprocessing import SOLVENTS, ReactionPreprocessingPipeline, HeuristicRoleClassifier
-from src.tokenizer import ChemSMILESTokenizer
+from src.preprocessing import ReactionPreprocessingPipeline, HeuristicRoleClassifier
+from src.tokenizer import smi_tokenizer
 from src.augmenter import augment_rxn
 from src.pysmilesutils.pysmilesutils_augmenter import SMILESAugmenter
 
@@ -32,17 +32,11 @@ def main(args):
     stages = [
         ut.drop_cxsmiles_info,
         ut.mix_reagents,
-        ut.assign_reaction_roles_schneider,
+        ut.reassign_reaction_roles,
         ut.canonical_remove_aam_rxn,
         ut.drop_isotopes,
-        ut.disassemble_pd_pph3,
-        ut.order_molecules
+        ut.assemble_ions
     ]
-
-    if args.keep_only_unique_molecules:
-        stages.append(
-            ut.keep_only_unique_molecules
-        )
 
     pipeline = ReactionPreprocessingPipeline(stages)
 
