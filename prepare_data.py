@@ -41,10 +41,8 @@ def main(args):
     pipeline = ReactionPreprocessingPipeline(stages)
 
     # === 1. Processing reactions in a predefined pipeline ===
-    logging.debug("Processing reactions, assigning reaction roles... Number of processes: %d" % args.cpu_count)
-    data["ProcessedReaction"] = ut.parallelize_on_rows(data[args.source_column],
-                                                       pipeline.run,
-                                                       num_of_processes=args.cpu_count)
+    logging.debug("Processing reactions, assigning reaction roles... Number of processes: %d" % args.n_jobs)
+    data["ProcessedReaction"] = ut.parallelize_on_rows(data[args.source_column], pipeline.run, args.n_jobs)
     assert len(data[data.ProcessedReaction.str.startswith("!")]) == 0
 
     # === Removing reactions with more than 10 unique molecules on the left side of a reaction
@@ -255,7 +253,7 @@ if __name__ == '__main__':
                              default="OriginalReaction")
     group_input.add_argument("--separator", type=str, default="\t",
                              help="Separator in the input .csv file.")
-    group_input.add_argument("--cpu_count", type=int, default=cpu_count(),
+    group_input.add_argument("--n_jobs", type=int, default=cpu_count(),
                              help="Number of processes to use in parallelized functions.")
 
     group_prep = parser.add_argument_group("Preprocessing flags")
