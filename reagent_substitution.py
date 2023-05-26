@@ -65,7 +65,7 @@ def get_files_for_forward_prediction(path,
 
     # Determine reagents by RDKit
     data["rxn_reagents_rdkit"] = ut.parallelize_on_rows(data["rxn_original"],
-                                                        ut.assign_reaction_roles_schneider,
+                                                        ut.reassign_reaction_roles,
                                                         cpu_count(),
                                                         use_tqdm=False)
 

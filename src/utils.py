@@ -33,7 +33,12 @@ SPECIAL_SYMBOLS |= {"-{}:".format(i) for i in [""] + list(range(9))}
 # === Reaction role assignment
 
 
-def assign_reaction_roles_schneider(smi: str) -> str:
+def reassign_reaction_roles(smi: str) -> str:
+    """
+    Decides on reactant-reagent separation in a reaction SMILES.
+    Uses the fingerprint-based technique implemented in RDKit.
+    Deafults to AAM-based role assignment on failure.
+    """
     try:
         reassigned = identifyReactants.reassignReactionRoles(smi)
     except RuntimeError:
