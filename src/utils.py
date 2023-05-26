@@ -8,6 +8,8 @@ from functools import partial
 from pandas import Series, concat
 import numpy as np
 
+from IPython.display import SVG
+
 from rdkit import Chem
 from rdkit.Chem import AllChem, Draw
 from rdkit.Chem import RDConfig
