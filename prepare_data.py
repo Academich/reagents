@@ -108,86 +108,35 @@ def main(args):
                     len(set(x[1].split(".")).intersection(set(x[2].split(".")))) > 0), axis=1)).dropna().index)
     logging.info("Reactions after: %d" % data.shape[0])
 
-    # === 4. (Optional) Augmentations ===
-    if args.use_augmentations:
-        smiles_randomizer = SMILESAugmenter(restricted=True)
-        logging.info("Augmenting reactions...")
-        data["ProcessedReaction"] = ut.parallelize_on_rows(data["ProcessedReaction"],
-                                                           partial(augment_rxn,
-                                                                   smiles_randomizer,
-                                                                   args.use_role_augmentations),
-                                                           num_of_processes=args.cpu_count)
-        data = data.explode("ProcessedReaction")
-        data.reset_index(drop=True, inplace=True)
-
+    # === 4. Rearranging reagents according to role priorities
     roles = data["ProcessedReaction"].str.split(">", expand=True)
     roles.columns = ["Reactants", "Reagents", "Products"]
     data.drop(["Reactants", "Reagents", "Products"], axis=1, inplace=True)
-    reagents = roles["Reagents"]
+    logging.info("Rearranging reagents according to their role priorities")
+    roles["Reagents"] = roles["Reagents"].apply(HeuristicRoleClassifier.rearrange_reagents)
+    data["ProcessedReaction"] = roles["Reactants"] + ">" + roles["Reagents"] + ">" + roles["Products"]
 
-    # === 5. Rearranging reagents according to role priorities
-    logging.info("Rearranging reagents according to their detailed roles.")
-    reagents = reagents.apply(HeuristicRoleClassifier.rearrange_reagents)
-
-    # === 6. Separating solvents from the rest of the reagents ===
-    logging.info("Separating solvents from the other reagents")
-    solvents_smiles = set(SOLVENTS)
-
-    reagents = reagents.apply(partial(ut.separate_solvents, solvents_smiles)).str.split("&", expand=True)
-    reagents.columns = ["Reagents", "Solvents"]
-    roles["Reagents"] = reagents["Reagents"]
-    roles = pd.concat((roles, reagents["Solvents"]), axis=1)
-
-    # === 5. (Optional) Deciding on common reagents that should become individual tokens in the target decoder ===
-    single_token_reagents = []
-    molecule_length_threshold = 10
-    if args.use_special_tokens:
-
-        # Here those are some common ligands and catalysts
-
-        if args.train:
-            for r in most_common_reagents:
-                long_phosph_comp = len(r) > molecule_length_threshold and "P" in r
-                if long_phosph_comp:
-                    single_token_reagents.append(r)
-
-            if len(single_token_reagents) > 0:
-                logging.info("Common reagents becoming individual tokens:\n %s", ", ".join(single_token_reagents))
-
-    # === 6. Deriving and saving tokenizer vocabulary ===
-    data = pd.concat((data, roles), axis=1)
-
-    domain = data[["Reactants", "Products"]].apply(lambda x: x[0] + ">>" + x[1], axis=1)
-    target = data[["Reagents", "Solvents"]].apply(lambda x: x[0] + "." * (len(x[0]) > 0 and len(x[1]) > 0) + x[1],
-                                                  axis=1)
-
-    save_path_intermediate_vocab = Path("data/vocabs").resolve()
-    save_path_src_vocab = (save_path_intermediate_vocab / (args.output_suffix + "_src_vocab")).with_suffix(".json")
-    save_path_tgt_vocab = (save_path_intermediate_vocab / (args.output_suffix + "_tgt_vocab")).with_suffix(".json")
-
-    if args.train:
-        logging.info("Deriving tokenization vocabulary...")
-        t_source = ChemSMILESTokenizer.based_on_smiles(
-            domain.values.flatten().tolist() + data["Reagents"].values.flatten().tolist())
-        t_target = ChemSMILESTokenizer.based_on_smiles(
-            domain.values.flatten().tolist() + data["Reagents"].values.flatten().tolist())
-        if len(single_token_reagents) > 0:
-            t_target.add_tokens(single_token_reagents, regex=False)
-            t_target.vocabulary.update({s: i + len(t_target.vocabulary) for i, s in enumerate(single_token_reagents)})
-
-        logging.info("Saving source tokenizer vocabulary to %s" % save_path_src_vocab)
-        t_source.save_vocabulary(save_path_src_vocab)
-        logging.info("Saving target tokenizer vocabulary to %s" % save_path_tgt_vocab)
-        t_target.save_vocabulary(save_path_tgt_vocab)
+    # === 4. Separating the training set from the validation set
+    data = data.sample(frac=1).reset_index(drop=True)
+    if args.val_size != 0:
+        data_train = data.iloc[:-args.val_size, :]
+        data_val = data.iloc[-args.val_size:, :]
     else:
-        logging.info("Loading tokenizer vocabularies")
-        t_source = ChemSMILESTokenizer()
-        t_source.load_vocabulary(save_path_src_vocab)
+        data_train = data
+        data_val = None
 
-        t_target = ChemSMILESTokenizer()
-        t_target.load_vocabulary(save_path_tgt_vocab)
-        long_tokens = [k for k, v in t_target.vocabulary.items() if len(k) > molecule_length_threshold]
-        t_target.add_tokens(long_tokens, regex=False)
+    # === 5. (Optional) Augmenting the training set ===
+
+    if args.use_augmentations:
+        smiles_randomizer = SMILESAugmenter(restricted=True)
+        logging.info("Augmenting reactions...")
+        data_train["ProcessedReaction"] = ut.parallelize_on_rows(data_train["ProcessedReaction"],
+                                                                 partial(augment_rxn,
+                                                                         smiles_randomizer,
+                                                                         args.use_role_augmentations),
+                                                                 num_of_processes=args.n_jobs)
+        data_train = data_train.explode("ProcessedReaction")
+        data_train.reset_index(drop=True, inplace=True)
 
     # === 7. Preparing and saving files for OpenNMT ===
     save_path = Path("data/tokenized").resolve() / args.output_dir
@@ -253,6 +202,8 @@ if __name__ == '__main__':
                              help="Separator in the input .csv file.")
     group_input.add_argument("--n_jobs", type=int, default=cpu_count(),
                              help="Number of processes to use in parallelized functions.")
+    group_input.add_argument("--val_size", type=int, default=0,
+                             help="Size of the validation set that will be separated from the input dataset")
 
     group_prep = parser.add_argument_group("Preprocessing flags")
     group_prep.add_argument("--use_augmentations", action="store_true",
