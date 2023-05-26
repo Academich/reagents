@@ -82,10 +82,8 @@ def main(args):
         logging.info("After removing rare reagents %d more reactions lost all reagents. (There was %d originally)" % (
             len(roles[roles['Reagents'] == '']) - n_rxns_without_reagents,
             n_rxns_without_reagents))
-        reagent_statistics_counter = repeated_reagents_counter
 
     # === 3. Dropping invalid entries ===
-    most_common_reagents = [r for r, n in reagent_statistics_counter.most_common(50)]
 
     data["ProcessedReaction"] = roles["Reactants"] + ">" + roles["Reagents"] + ">" + roles["Products"]
 
