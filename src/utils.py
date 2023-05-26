@@ -11,10 +11,9 @@ import numpy as np
 from rdkit import Chem
 from rdkit.Chem import AllChem, Draw
 from rdkit.Chem import RDConfig
+from rdkit import RDLogger
 
-from IPython.display import SVG
-
-from src.preprocessing.atoms_and_groups import SPECIAL_ELEMENTS_AND_GROUPS
+RDLogger.DisableLog('rdApp.*')
 
 # Import reaction role assignment functionality from the rdkit Contrib directory.
 # Don't mind the red underlining in the IDE, it works.
