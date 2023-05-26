@@ -192,9 +192,7 @@ if __name__ == '__main__':
     group_input = parser.add_argument_group("Input settings")
     group_input.add_argument("--filepath", type=str,
                              help="Path to the raw data (.csv) that needs preprocessing.")
-    group_input.add_argument("--output_suffix", type=str, default="", help="Additional suffix to the output files.")
-    group_input.add_argument("--train", action="store_true",
-                             help="If true, derive and save tokenizer vocabulary from the processed data.")
+    group_input.add_argument("--output_dir", type=str, default="", help="Name of the directory with tokenized files.")
     group_input.add_argument("--source_column", type=str,
                              help="Name of the column in the input that needs preprocessing.",
                              default="OriginalReaction")
