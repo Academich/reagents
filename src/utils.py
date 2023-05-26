@@ -25,10 +25,6 @@ from RxnRoleAssignment import identifyReactants
 AAM_TEMPLATE = re.compile('\[[a-zA-Z0-9]+:[0-9]+]')
 RESIDUAL_AAM = re.compile(':[0-9]+')
 
-SPECIAL_SYMBOLS = {"@", "@@"}
-SPECIAL_SYMBOLS |= {"+{}:".format(i) for i in [""] + list(range(9))}
-SPECIAL_SYMBOLS |= {"-{}:".format(i) for i in [""] + list(range(9))}
-
 
 # === Reaction role assignment
 
