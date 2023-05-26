@@ -110,36 +110,6 @@ def mix_reagents(smi: str) -> str:
     return left + "." * bool(center) + center + ">>" + right
 
 
-def separate_molecule_tokens(lst: List[int], sep: int) -> List[int]:
-    """
-    Separates numbers in a list of numbers with a specified number
-    :param lst:
-    :param sep:
-    :return:
-    """
-    if len(lst) < 2:
-        return lst
-    out = []
-    _lst = iter(lst)
-    for i in range(len(lst) * 2 - 1):
-        if i % 2 == 0:
-            out.append(next(_lst))
-        else:
-            out.append(sep)
-    return out
-
-
-def disassemble_pd_pph3(smi: str) -> str:
-    """
-    Replaces a Pd(PPh3)4 molecule with 5 separate species - one Pd and four PPh3
-    :param smi:
-    :return:
-    """
-    united = "c1ccc([PH](c2ccccc2)(c2ccccc2)[Pd]([PH](c2ccccc2)(c2ccccc2)c2ccccc2)([PH](c2ccccc2)(c2ccccc2)c2ccccc2)[PH](c2ccccc2)(c2ccccc2)c2ccccc2)cc1"
-    split = "[Pd].c1ccc(P(c2ccccc2)c2ccccc2)cc1.c1ccc(P(c2ccccc2)c2ccccc2)cc1.c1ccc(P(c2ccccc2)c2ccccc2)cc1.c1ccc(P(c2ccccc2)c2ccccc2)cc1"
-    return smi.replace(united, split)
-
-
 def canonical_remove_aam_mol(smi: str) -> str:
     """
     Removes atom mapping from a Mol object using RDKit
@@ -161,51 +131,7 @@ def drop_cxsmiles_info(smi: str) -> str:
     return smi.split("|")[0].strip()
 
 
-def keep_only_unique_molecules(smi: str) -> str:
-    """
-    Removes duplicates of molecules in every part of a reaction
-    :param smi:
-    :return:
-    """
-
-    def process_sequence(s: str) -> str:
-        unique_mols = set()
-        res = []
-        for m in s.split("."):
-            if m not in unique_mols:
-                unique_mols.add(m)
-                res.append(m)
-        return ".".join(res)
-
-    left, center, right = smi.split(">")
-    left = process_sequence(left)
-    center = process_sequence(center)
-    right = process_sequence(right)
-
-    return ">".join((left, center, right))
-
-
-def order_molecules(smi: str) -> str:
-    """
-    Orders a set of molecules written as SMILES separated by dots.
-    The longest molecules come first. In the same length they are ordered in alphabetical order.
-    """
-    left, center, right = smi.split(">")
-    left = ".".join(sorted(left.split("."), key=lambda x: (len(x), x), reverse=True))
-    center = ".".join(sorted(center.split("."), key=lambda x: (len(x), x), reverse=True))
-    right = ".".join(sorted(right.split("."), key=lambda x: (len(x), x), reverse=True))
-    return left + ">" + center + ">" + right
-
-
 # === Chemical curation
-
-def fix_charcoal(smi: str) -> str:
-    left, center, right = smi.split(">")
-    _center = sorted(center.split("."), key=len, reverse=True)
-    not_left = ".".join(_center) + ">" + right
-    if ".C>" in not_left and ("[Pd]" in center or "[H][H]" in center):
-        return left + ">" + not_left.replace(".C>", ".[C]>")
-    return smi
 
 
 class IonAssembler:
@@ -412,8 +338,3 @@ def run_on_subset(func: Callable, use_tqdm, data_subset):
 
 def parallelize_on_rows(d: Series, func, num_of_processes: int, use_tqdm=False) -> Series:
     return __parallelize(d, partial(run_on_subset, func, use_tqdm), num_of_processes)
-
-
-if __name__ == '__main__':
-    print(assign_reaction_roles_by_aam(
-        "Br[CH2:2][C:3]1[C:15]2[CH2:14][C:13]3[C:8](=[CH:9][CH:10]=[CH:11][CH:12]=3)[C:7]=2[CH:6]=[CH:5][CH:4]=1.O.C1COCC1>>[C:3]1([CH2:2][CH2:2][C:3]2[C:15]3[CH2:14][C:13]4[C:8](=[CH:9][CH:10]=[CH:11][CH:12]=4)[C:7]=3[CH:6]=[CH:5][CH:4]=2)[C:15]2[CH2:14][C:13]3[C:8](=[CH:9][CH:10]=[CH:11][CH:12]=3)[C:7]=2[CH:6]=[CH:5][CH:4]=1"))
