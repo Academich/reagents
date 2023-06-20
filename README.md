@@ -83,7 +83,7 @@ It's possible to download the data using `gdown` (installed with other requireme
 
    Then, train a model:
    ```bash
-       onmt_train -config data/tokenized/MIT_mixed/MIT_mixed.yml -tensorboard -tensorboard_log_dir runs/MIT_mixed
+       onmt_train -config data/tokenized/MIT_mixed/MIT_mixed.yml -tensorboard -tensorboard_log_dir runs/MIT_mixed -world_size 1 -gpu_ranks 0
    ```
 The checkpoints will be saved to the directory under "save_model" in the config.  
 By default for MIT_mixed it's `experiments/checkpoints/MIT_mixed/`
