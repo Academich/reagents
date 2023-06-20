@@ -55,11 +55,25 @@ downloaded [here](https://drive.google.com/drive/folders/1Cr8AsAIYSGaXJuBnlVflBa
 ## Model training
 
 1. Prepare or download the tokenized datasets and put them in the `data/tokenized` directory.
-  * Product prediction (USPTO MIT mixed): [IBM Box](https://ibm.ent.box.com/v/MolecularTransformerData)
-  * Product prediction (USPTO MIT separated): [IBM Box](https://ibm.ent.box.com/v/MolecularTransformerData)
-  * Product prediction (USPTO MIT mixed, replaced reagents): [Google Drive](https://drive.google.com/drive/folders/1H9j4dkd1nWiNN6XhXQGNnfmwtlqkARZc?usp=sharing)
-  * Product prediction (USPTO MIT separated, replaced reagents): [Google Drive](https://drive.google.com/drive/folders/1SK-lgPvZhkBOaZwCWCN-Bq478kKMLbdS?usp=sharing)
-  * Reagent prediction (USPTO full with no reactions from USPTO MIT test): [Google Drive](https://drive.google.com/drive/folders/1Z-8UsXqScwtV4s9oXYYY1OcbDaYvxLWi?usp=sharing)
+  * Product prediction (USPTO MIT mixed): [Google Drive](https://drive.google.com/drive/folders/1fJ7Hm55IDevIi5Apna7v-rQBQStTH7Yg)
+  * Product prediction (USPTO MIT separated): [Google Drive](https://drive.google.com/drive/folders/1kiTsRRo2MnA8eJYjIvUsw9Zw1eMApVwG)
+  * Product prediction (USPTO MIT mixed, replaced reagents): [Google Drive](https://drive.google.com/drive/folders/1X2V0TVmakKH3-OCV1bIBDtZsLhMUyRgo)
+  * Product prediction (USPTO MIT separated, replaced reagents): [Google Drive](https://drive.google.com/drive/folders/1xT0CMpREIzbzjuWFkhjJ0k1Shs9ssZkH)  
+  * Reagent prediction (USPTO full with no reactions from USPTO MIT test): [Google Drive](https://drive.google.com/drive/folders/1AUF7_LeCUcHSUlr48IS1cXfQ14_Y1Gxc)
+
+It's possible to download the data using `gdown` (installed with other requirements from requirements.txt)
+   ```bash
+   # USPTO MIT mixed
+   gdown https://drive.google.com/drive/folders/1fJ7Hm55IDevIi5Apna7v-rQBQStTH7Yg -O data/tokenized/MIT_mixed --folder
+   # USPTO MIT separated
+   gdown https://drive.google.com/drive/folders/1kiTsRRo2MnA8eJYjIvUsw9Zw1eMApVwG -O data/tokenized/MIT_separated --folder
+   # USPTO MIT mixed, replaced reagents
+   gdown https://drive.google.com/drive/folders/1X2V0TVmakKH3-OCV1bIBDtZsLhMUyRgo -O data/tokenized/MIT_mixed_new --folder
+   # USPTO MIT separated, replaced reagents
+   gdown https://drive.google.com/drive/folders/1xT0CMpREIzbzjuWFkhjJ0k1Shs9ssZkH -O data/tokenized/MIT_separated_new --folder
+   # USPTO full with no reactions from USPTO MIT test
+   gdown https://drive.google.com/drive/folders/1AUF7_LeCUcHSUlr48IS1cXfQ14_Y1Gxc -O data/tokenized/reagents_no_MIT_test --folder
+   ```
 
 2. Train a reagents prediction model (e.g. for MIT_mixed):  
    First, build vocabularies for an OpenNMT model:
