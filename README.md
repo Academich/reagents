@@ -52,6 +52,30 @@ downloaded [here](https://drive.google.com/drive/folders/1Cr8AsAIYSGaXJuBnlVflBa
    pip install torch==1.13.1 -f https://download.pytorch.org/whl/torch_stable.html
    ```
 
+## Model training
+
+1. Prepare or download the tokenized datasets and put them in the `data/tokenized` directory.
+  * Product prediction (USPTO MIT mixed): [IBM Box](https://ibm.ent.box.com/v/MolecularTransformerData)
+  * Product prediction (USPTO MIT separated): [IBM Box](https://ibm.ent.box.com/v/MolecularTransformerData)
+  * Product prediction (USPTO MIT mixed, replaced reagents): [Google Drive](https://drive.google.com/drive/folders/1H9j4dkd1nWiNN6XhXQGNnfmwtlqkARZc?usp=sharing)
+  * Product prediction (USPTO MIT separated, replaced reagents): [Google Drive](https://drive.google.com/drive/folders/1SK-lgPvZhkBOaZwCWCN-Bq478kKMLbdS?usp=sharing)
+  * Reagent prediction (USPTO full with no reactions from USPTO MIT test): [Google Drive](https://drive.google.com/drive/folders/1Z-8UsXqScwtV4s9oXYYY1OcbDaYvxLWi?usp=sharing)
+
+2. Train a reagents prediction model (e.g. for MIT_mixed):  
+   First, build vocabularies for an OpenNMT model:
+   ```bash
+       onmt_build_vocab -config data/tokenized/MIT_mixed/MIT_mixed.yml -n_sample -1
+   ```
+
+   Then, train a model:
+   ```bash
+       onmt_train -config data/tokenized/MIT_mixed/MIT_mixed.yml -tensorboard -tensorboard_log_dir runs/MIT_mixed
+   ```
+The checkpoints will be saved to the directory under "save_model" in the config.  
+By default for MIT_mixed it's `experiments/checkpoints/MIT_mixed/`
+
+Trained models can be downloaded [here](https://drive.google.com/drive/folders/1weP5wG_wzd9qb3RVnCz0JjyB-TJF-5yQ?usp=sharing).
+
 ## Workflow
 
 1. Download the datasets and put them in the `data/tokenized` directory.
