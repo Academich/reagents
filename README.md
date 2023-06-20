@@ -11,21 +11,6 @@ Idea:
 * Infer missing reagents for some reactions in the training set.
 * Train a transformer for reaction product prediction on the dataset with improved reagents.
 
-## Data
-
-The entire USPTO data used to assemble the training set for reagent prediction can be
-downloaded [here](https://ibm.ent.box.com/v/ReactionSeq2SeqDataset).
-
-The training set for reagents prediction was obtained from it using the `prepare_data.py` script. It does not overlap
-with the USPTO MIT test set. The tokenized data can be
-downloaded [here](https://drive.google.com/drive/folders/1Z-8UsXqScwtV4s9oXYYY1OcbDaYvxLWi?usp=sharing).
-
-The tokenized data for product prediction is stored [here](https://ibm.box.com/v/MolecularTransformerData). For the
-description of these data, please refer to the README of the
-original [Molecular Transformer](https://github.com/pschwllr/MolecularTransformer).
-
-The data for product prediction with altered reagents can be
-downloaded [here](https://drive.google.com/drive/folders/1Cr8AsAIYSGaXJuBnlVflBax3ZbEbq89s?usp=sharing).
 
 ## Installation
 
@@ -52,14 +37,16 @@ downloaded [here](https://drive.google.com/drive/folders/1Cr8AsAIYSGaXJuBnlVflBa
    pip install torch==1.13.1 -f https://download.pytorch.org/whl/torch_stable.html
    ```
 
-## Model training
+## Data
 
-1. Prepare or download the tokenized datasets and put them in the `data/tokenized` directory.
+Prepare or download the tokenized datasets and put them in the `data/tokenized` directory.
   * Product prediction (USPTO MIT mixed): [Google Drive](https://drive.google.com/drive/folders/1fJ7Hm55IDevIi5Apna7v-rQBQStTH7Yg)
   * Product prediction (USPTO MIT separated): [Google Drive](https://drive.google.com/drive/folders/1kiTsRRo2MnA8eJYjIvUsw9Zw1eMApVwG)
   * Product prediction (USPTO MIT mixed, replaced reagents): [Google Drive](https://drive.google.com/drive/folders/1X2V0TVmakKH3-OCV1bIBDtZsLhMUyRgo)
   * Product prediction (USPTO MIT separated, replaced reagents): [Google Drive](https://drive.google.com/drive/folders/1xT0CMpREIzbzjuWFkhjJ0k1Shs9ssZkH)  
-  * Reagent prediction (USPTO full with no reactions from USPTO MIT test): [Google Drive](https://drive.google.com/drive/folders/1AUF7_LeCUcHSUlr48IS1cXfQ14_Y1Gxc)
+  * Reagent prediction (USPTO full with no reactions from USPTO MIT test): [Google Drive](https://drive.google.com/drive/folders/1AUF7_LeCUcHSUlr48IS1cXfQ14_Y1Gxc).  
+
+The dataset for reagent prediction was obtained from full USPTO taken from [here](https://ibm.ent.box.com/v/ReactionSeq2SeqDataset) using the `prepare_data.py` script.
 
 It's possible to download the data using `gdown` (installed with other requirements from requirements.txt)
    ```bash
@@ -75,7 +62,9 @@ It's possible to download the data using `gdown` (installed with other requireme
    gdown https://drive.google.com/drive/folders/1AUF7_LeCUcHSUlr48IS1cXfQ14_Y1Gxc -O data/tokenized/reagents_no_MIT_test --folder
    ```
 
-2. Train a reagents prediction model (e.g. for MIT_mixed):  
+## Model training
+
+Train a reagents prediction model (e.g. for MIT_mixed):  
    First, build vocabularies for an OpenNMT model:
    ```bash
        onmt_build_vocab -config data/tokenized/MIT_mixed/MIT_mixed.yml -n_sample -1
