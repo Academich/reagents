@@ -9,11 +9,10 @@ import numpy as np
 from rdkit import RDLogger
 
 import src.utils as ut
-from src.prediction import MTProductPredictor, MTReagentPredictor
+from src.prediction import MolecularTransformerReagentPredictor
+from src.tokenizer import smi_tokenizer
 
 RDLogger.DisableLog('rdApp.*')
-
-tokenizer = MTProductPredictor(None, None, None)._smi_tokenizer
 
 np.random.seed(123456)
 
@@ -45,7 +44,7 @@ def extract_reagents(smi: str) -> str:
 
 def get_files_for_forward_prediction(path,
                                      subset: str,
-                                     reag_predictor: 'MTReagentPredictor',
+                                     reag_predictor: 'MolecularTransformerReagentPredictor',
                                      mixed: bool = False) -> None:
     """
     Replaces reagents in the tokenized files for product prediction according to different strategies.
@@ -82,7 +81,7 @@ def get_files_for_forward_prediction(path,
     data["rgs_rdkit"] = data["rxn_reagents_rdkit"].apply(extract_reagents)
 
     # Predict new reagents for all reactions with a trained model
-    reag_predictor.predict(data["rxn_no_reagents"])
+    reag_predictor.make_and_store_predictions(data["rxn_no_reagents"])
     reag_predictor.load_predictions()
     predicted_reagents = reag_predictor.predictions
 
@@ -94,7 +93,7 @@ def get_files_for_forward_prediction(path,
     direct.mkdir(parents=True, exist_ok=True)
     with open(direct / f"src-{subset}.txt", 'w') as h:
         h.write(
-            "\n".join(reactants.apply(tokenizer))
+            "\n".join(reactants.apply(smi_tokenizer))
         )
     shutil.copy(path / f"tgt-{subset}.txt", direct / f"tgt-{subset}.txt")
 
@@ -112,7 +111,7 @@ def get_files_for_forward_prediction(path,
     direct.mkdir(parents=True, exist_ok=True)
     with open(direct / f"src-{subset}.txt", 'w') as h:
         h.write(
-            "\n".join(data["src_reagents_top1"].apply(tokenizer))
+            "\n".join(data["src_reagents_top1"].apply(smi_tokenizer))
         )
     shutil.copy(path / f"tgt-{subset}.txt", direct / f"tgt-{subset}.txt")
 
@@ -139,7 +138,7 @@ def get_files_for_forward_prediction(path,
     direct.mkdir(parents=True, exist_ok=True)
     with open(direct / f"src-{subset}.txt", 'w') as h:
         h.write(
-            "\n".join(data["src_reagents_top1_and_rdkit"].apply(tokenizer))
+            "\n".join(data["src_reagents_top1_and_rdkit"].apply(smi_tokenizer))
         )
     shutil.copy(path / f"tgt-{subset}.txt", direct / f"tgt-{subset}.txt")
     # ===============================================================================
@@ -161,7 +160,7 @@ def get_files_for_forward_prediction(path,
     direct.mkdir(parents=True, exist_ok=True)
     with open(direct / f"src-{subset}.txt", 'w') as h:
         h.write(
-            "\n".join(data["src_reagents_role_voting"].apply(tokenizer))
+            "\n".join(data["src_reagents_role_voting"].apply(smi_tokenizer))
         )
     shutil.copy(path / f"tgt-{subset}.txt", direct / f"tgt-{subset}.txt")
 
@@ -193,12 +192,12 @@ if __name__ == '__main__':
 
     for subset in subsets:
         print(f"Processing {subset}...")
-        reag_predictor = MTReagentPredictor(vocabulary_path=args.reagent_model_vocab,
-                                            model_path=args.reagent_model,
-                                            tokenized_path=f"data/test/{path.name.lower()}_no_reagents_{subset}.txt",
-                                            output_path=f"experiments/results/{path.name.lower()}_new_reagents_{subset}.txt",
-                                            beam_size=5,
-                                            gpu=0)
+        reag_predictor = MolecularTransformerReagentPredictor(vocabulary_path=args.reagent_model_vocab,
+                                                              model_path=args.reagent_model,
+                                                              tokenized_path=f"data/test/{path.name.lower()}_no_reagents_{subset}.txt",
+                                                              output_path=f"experiments/results/{path.name.lower()}_new_reagents_{subset}.txt",
+                                                              beam_size=5,
+                                                              gpu=0)
         get_files_for_forward_prediction(path,
                                          subset,
                                          reag_predictor,
