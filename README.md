@@ -62,7 +62,7 @@ It's possible to download the data using `gdown` (installed with other requireme
    gdown https://drive.google.com/drive/folders/1AUF7_LeCUcHSUlr48IS1cXfQ14_Y1Gxc -O data/tokenized/reagents_no_MIT_test --folder
    ```
 
-## Model training
+## Model training and testing
 
 Train a reagents prediction model (e.g. for MIT_mixed):  
    First, build vocabularies for an OpenNMT model:
@@ -74,6 +74,12 @@ Train a reagents prediction model (e.g. for MIT_mixed):
    ```bash
        onmt_train -config data/tokenized/MIT_mixed/MIT_mixed.yml -tensorboard -tensorboard_log_dir runs/MIT_mixed -world_size 1 -gpu_ranks 0
    ```
+
+   Make predictions with a trained model:
+   ```bash
+      onmt_translate -model <CHECKPOINT>.pt -src data/tokenized/MIT_mixed/src-test.txt -output data/tokenized/MIT_mixed/pred-val.txt \
+                     -beam_size 5 -n_best 5 -batch_size 64 -gpu 0 
+   ```
 The checkpoints will be saved to the directory under "save_model" in the config.  
 By default for MIT_mixed it's `experiments/checkpoints/MIT_mixed/`
 
@@ -84,35 +90,9 @@ Trained models can be downloaded [here](https://drive.google.com/drive/folders/1
 1. Download the datasets and put them in the `data/tokenized` directory.
 
 2. Train a reagents prediction model:
-   First, preprocess the data for an OpenNMT model:
-   ```bash
-       python3 preprocess.py -train_src data/tokenized/${DATASET_NAME}/src-train.txt \
-                             -train_tgt data/tokenized/${DATASET_NAME}/tgt-train.txt \
-                             -valid_src data/tokenized/${DATASET_NAME}/src-val.txt \
-                             -valid_tgt data/tokenized/${DATASET_NAME}/tgt-val.txt \
-                             -save_data data/tokenized/${DATASET_NAME}/${DATASET_NAME} \
-                             -src_seq_length 1000 -tgt_seq_length 1000 \
-                             -src_vocab_size 1000 -tgt_vocab_size 1000 -share_vocab
-   ```
 
-   Then, run a model:
-   ```bash
-       python3 train.py -data data/tokenized/${DATASET_NAME}/${DATASET_NAME} \
-                        -save_model experiments/checkpoints/${DATASET_NAME}/${DATASET_NAME}_model \
-                        -seed 42 -gpu_ranks 0 -save_checkpoint_steps 10000 -keep_checkpoint 20 \
-                        -train_steps 500000 -param_init 0  -param_init_glorot -max_generator_batches 32 \
-                        -batch_size 4096 -batch_type tokens -normalization tokens -max_grad_norm 0  -accum_count 4 \
-                        -optim adam -adam_beta1 0.9 -adam_beta2 0.998 -decay_method noam -warmup_steps 8000  \
-                        -learning_rate 2 -label_smoothing 0.0 -report_every 10 \
-                        -layers 4 -rnn_size 256 -word_vec_size 256 -encoder_type transformer -decoder_type transformer \
-                        -dropout 0.1 -position_encoding -share_embeddings \
-                        -global_attention general -global_attention_function softmax -self_attn_type scaled-dot \
-                        -heads 8 -transformer_ff 2048 -tensorboard
-   ```
 3. Train a basline product prediction model:  
-   Train a Molecular Transformer on, say, `MIT_separated` data. For this, run the `preprocess.py` script and
-   the `train.py` script  
-   as shown above but with `DATASET_NAME=MIT_separated`.
+   Train a Molecular Transformer on, say, `MIT_separated` data.
 
 4. Use a trained reagent model to improve reagents in a dataset for product prediction.   
    The script `reagent_substitution.py` uses a reagents prediction model to change reagents in data which is the input  
