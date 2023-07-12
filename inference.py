@@ -21,7 +21,10 @@ def predict_reagents(cliargs: Namespace) -> None:
         batch_size=cliargs.batch_size,
         gpu=cliargs.gpu
     )
-    reagent_predictor.predict(src_data)
+    reagent_predictor.make_and_store_predictions(src_data)
+    if args.print:
+        reagent_predictor.load_predictions()
+        print(reagent_predictor.predictions.to_string())
 
 
 def predict_products(cliargs: Namespace) -> None:
@@ -39,7 +42,10 @@ def predict_products(cliargs: Namespace) -> None:
         batch_size=cliargs.batch_size,
         gpu=cliargs.gpu
     )
-    product_predictor.predict(src_data)
+    product_predictor.make_and_store_predictions(src_data)
+    if args.print:
+        product_predictor.load_predictions()
+        print(product_predictor.predictions.to_string())
 
 
 if __name__ == '__main__':
@@ -60,6 +66,8 @@ if __name__ == '__main__':
                         help="Batch size")
     parser.add_argument("--gpu", type=int, default=None,
                         help="GPU index. Defaults to None, i.e. CPU")
+    parser.add_argument("--print", action="store_true",
+                        help="Prints the predictions to the terminal. Works best with n_best=1")
     args = parser.parse_args()
     if args.task == "reagents":
         predict_reagents(args)

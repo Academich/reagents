@@ -69,7 +69,7 @@ class MolecularTransformerPredictor:
             probs = pd.DataFrame(np.array(prob_scores).reshape(-1, self.n_best))
         return pred_smiles, probs
 
-    def predict(self, s: 'pd.Series'):
+    def make_and_store_predictions(self, s: pd.Series):
         input_tokens = s.apply(smi_tokenizer)
         with open(self.tokenized_path, "w") as f:
             f.write("\n".join(input_tokens))
