@@ -1,3 +1,4 @@
+
 # Molecular Transformer for Reagents Prediction
 
 This is the code for the
@@ -75,11 +76,16 @@ Train a reagents prediction model (e.g. for MIT_mixed):
        onmt_train -config data/tokenized/MIT_mixed/MIT_mixed.yml -tensorboard -tensorboard_log_dir runs/MIT_mixed -world_size 1 -gpu_ranks 0
    ```
 
-   Make predictions with a trained model:
+   Make predictions with a trained model (takes tokenized data and produces tokenized predictions):
    ```bash
       onmt_translate -model <CHECKPOINT>.pt -src data/tokenized/MIT_mixed/src-test.txt -output data/tokenized/MIT_mixed/pred-val.txt \
                      -beam_size 5 -n_best 5 -batch_size 64 -gpu 0 
    ```
+   Make predictions for untokenized reactions and obtain untokenized predicted SMILES:
+   ```bash
+   python3 inference.py --task <reagents/products> --data <untokenized SMILES, .txt> --model <checkpoint, .pt>
+   ```
+   For more information run `python3 inference.py --help`
 The checkpoints will be saved to the directory under "save_model" in the config.  
 By default for MIT_mixed it's `experiments/checkpoints/MIT_mixed/`
 
