@@ -5,7 +5,7 @@ from collections import Counter
 from rdkit import Chem
 from rdkit.Chem import Fragments
 
-from src.preprocessing.solvents import SOLVENTS
+from preprocessing.solvents import SOLVENTS
 
 CATALYTIC_METALS = {"Ti", "V", "Cr", "Mn", "Fe", "Co", "Ni", "Cu", "Zn", "Ga", "Ge", "As",
                     "Y", "Zr", "Nb", "Mo", "Tc", "Ru", "Rh", "Pd", "Ag", "Cd", "In", "Sn", "Sb", "La", "Ce", "Hf", "Ta",

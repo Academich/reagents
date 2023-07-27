@@ -1,6 +1,6 @@
 import random
 from typing import List
-from src.pysmilesutils.pysmilesutils_augmenter import SMILESAugmenter
+from pysmilesutils.pysmilesutils_augmenter import SMILESAugmenter
 
 import numpy as np
 
