@@ -279,6 +279,40 @@ def separate_solvents(solvents_set: Set[str], smi: str) -> str:
     return ".".join(agents) + "&" + ".".join(slvs)
 
 
+def match_accuracy(tgt_and_pred, mode: str) -> list[int]:
+    """
+    Calculates the accuracy of reagent predictions.
+    :param tgt_and_pred: A pandas series where the first row containts the target string,
+    and all the other contain predictions ordered by priority.
+    The function is meant to be applied to a DataFrame of shape (M, N+1), where M is the number of reactions
+    and N is the number of predictions.
+    :param mode: If it is 'exact', calculates exact match accuracy.
+    If it is 'partial', calculates partial match accuracy.
+    :return: List of zeros and ones of length N.
+    """
+
+    def _exact_match(t_set: set[str], p_set: set[str]) -> bool:
+        return len(t_set.symmetric_difference(p_set)) == 0
+
+    def _partial_match(t_set: set[str], p_set: set[str]) -> bool:
+        return len(t_set & p_set) > 0
+
+    if mode == 'exact':
+        _match = _exact_match
+    elif mode == 'partial':
+        _match = _partial_match
+    else:
+        raise ValueError(f"The only allowed values for the 'mode' argument are 'exact' and 'partial', not {mode}")
+
+    tgt_mols, *pred_mols = tgt_and_pred
+    tgt_set = {s for s in tgt_mols.split(".") if s}
+    topn = {i + 1: False for i in range(len(pred_mols))}
+    for i, p in enumerate(pred_mols):
+        pred_set = {s for s in p.split(".") if s}
+        topn[i + 1] = topn.get(i, False) or _match(tgt_set, pred_set)
+    return [int(topn[i + 1]) for i in range(len(pred_mols))]
+
+
 # === Reagent statistics
 def smi_mol_counter(smi_col: Series):
     return smi_col.apply(lambda s: Counter(s.split("."))).sum()
