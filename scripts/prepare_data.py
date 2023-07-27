@@ -10,11 +10,11 @@ import pandas as pd
 
 from rdkit import RDLogger
 
-import src.utils as ut
-from src.preprocessing import ReactionPreprocessingPipeline, HeuristicRoleClassifier
-from src.tokenizer import smi_tokenizer
-from src.augmenter import augment_rxn
-from src.pysmilesutils.pysmilesutils_augmenter import SMILESAugmenter
+import utils as ut
+from preprocessing import ReactionPreprocessingPipeline, HeuristicRoleClassifier
+from tokenizer import smi_tokenizer
+from augmenter import augment_rxn
+from pysmilesutils.pysmilesutils_augmenter import SMILESAugmenter
 
 
 def main(args):
