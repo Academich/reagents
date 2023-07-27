@@ -169,7 +169,6 @@ def get_files_for_forward_prediction(path: Path,
 
 
 if __name__ == '__main__':
-
     logging.basicConfig(
         filename=ut.get_root_dir() / "logs" / f"reagent_substitution_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.log",
         level=logging.DEBUG,
@@ -178,10 +177,10 @@ if __name__ == '__main__':
     parser = ArgumentParser()
     parser.add_argument("--data_dir", type=str, required=True,
                         help="Path to a directory with tokenized files for product prediction")
+    parser.add_argument("--subset", type=str, required=True,
+                        help="Name that specifies the data split, e.g. 'train' for 'src-train.txt' and 'tgt-train.txt'")
     parser.add_argument("--reagent_model", type=str,
                         help="Path to a trained reagents prediction model", required=True)
-    parser.add_argument("--including_test", action="store_true",
-                        help="Whether to chenge reagents in the test set as well")
     parser.add_argument("--mixed_precursors", action="store_true",
                         help="Whether to mix reactants and reagents together in the generated files")
     parser.add_argument("--beam_size", type=int, default=5)
@@ -190,22 +189,18 @@ if __name__ == '__main__':
 
     path = Path(args.data_dir).resolve()
 
-    subsets = [
-        "train",
-        "val"
-    ]
-    if args.including_test:
-        subsets.append("test")
-
-    for subset in subsets:
-        logging.info(f"Processing {subset}...")
-        reag_predictor = MolecularTransformerReagentPredictor(model_path=args.reagent_model,
-                                                              tokenized_path=f"data/test/{path.name.lower()}_no_reagents_{subset}.txt",
-                                                              output_path=f"experiments/results/{path.name.lower()}_new_reagents_{subset}.txt",
-                                                              beam_size=args.beam_size,
-                                                              n_best=args.beam_size,
-                                                              gpu=0)
-        get_files_for_forward_prediction(path,
-                                         subset,
-                                         reag_predictor,
-                                         mixed=args.mixed_precursors)
+    logging.info(f"Processing src-{args.subset}.txt and tgt-{args.subset}.txt")
+    tokenized_path = ut.get_root_dir() / "data" / "test" / f"{path.name.lower()}_no_reagents_{args.subset}.txt"
+    output_path = ut.get_root_dir() / "experiments" / "results" / f"{path.name.lower()}_new_reagents_{args.subset}.txt"
+    reag_predictor = MolecularTransformerReagentPredictor(
+        model_path=args.reagent_model,
+        tokenized_path=str(tokenized_path),
+        output_path=str(output_path),
+        beam_size=args.beam_size,
+        n_best=args.beam_size,
+        gpu=args.gpu
+    )
+    get_files_for_forward_prediction(path,
+                                     args.subset,
+                                     reag_predictor,
+                                     mixed=args.mixed_precursors)

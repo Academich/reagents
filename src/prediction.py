@@ -3,8 +3,8 @@ import subprocess
 import pandas as pd
 import numpy as np
 
-from src.tokenizer import smi_tokenizer
-from src.preprocessing.reagents_classification import HeuristicRoleClassifier
+from tokenizer import smi_tokenizer
+from preprocessing.reagents_classification import HeuristicRoleClassifier
 
 
 class MolecularTransformerPredictor:
