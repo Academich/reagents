@@ -15,7 +15,7 @@ Idea:
 
 ## Installation
 
-1. Create a conda environment with python 3.10
+1. Create a conda environment with _Python 3.10_
    ```bash
    conda create -n reagents python=3.10 -y
    conda activate reagents
@@ -26,16 +26,22 @@ Idea:
    ```
 3. Install Pytorch separately
 
-* With GPU
+   * With GPU
+
+      ```bash
+      pip install torch==1.13.1+cu117 -f https://download.pytorch.org/whl/torch_stable.html
+      ```
+
+   * Without GPU
+
+      ```bash
+      pip install torch==1.13.1 -f https://download.pytorch.org/whl/torch_stable.html
+      ```
+
+4. Run setup:
 
    ```bash
-   pip install torch==1.13.1+cu117 -f https://download.pytorch.org/whl/torch_stable.html
-   ```
-
-* Without GPU
-
-   ```bash
-   pip install torch==1.13.1 -f https://download.pytorch.org/whl/torch_stable.html
+   pip install -e .
    ```
 
 ## Data
