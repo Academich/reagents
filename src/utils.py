@@ -4,6 +4,7 @@ from typing import Callable, List, Set
 from collections import Counter
 from multiprocessing import Pool, cpu_count
 from functools import partial
+from pathlib import Path
 
 from pandas import Series, concat
 import numpy as np
@@ -21,6 +22,12 @@ RDLogger.DisableLog('rdApp.*')
 # Don't mind the red underlining in the IDE, it works.
 sys.path.append(RDConfig.RDContribDir)
 from RxnRoleAssignment import identifyReactants
+
+
+def get_root_dir():
+    parts = Path.cwd().parts
+    parts = parts[:parts.index("reagents")]
+    return Path(*parts) / "reagents"
 
 
 # === Reaction role assignment
@@ -108,6 +115,13 @@ def mix_reagents(smi: str) -> str:
     """
     left, center, right = smi.split(">")
     return left + "." * bool(center) + center + ">>" + right
+
+
+def canonicalize_smiles(smiles):
+    mol = Chem.MolFromSmiles(smiles)
+    if mol is None:
+        return ''
+    return Chem.MolToSmiles(mol, isomericSmiles=True)
 
 
 def canonical_remove_aam_mol(smi: str) -> str:
