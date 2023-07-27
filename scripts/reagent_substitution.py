@@ -2,15 +2,17 @@ import shutil
 from pathlib import Path
 from multiprocessing import cpu_count
 from argparse import ArgumentParser
+import logging
+from datetime import datetime
 
 import pandas as pd
 import numpy as np
 
 from rdkit import RDLogger
 
-import src.utils as ut
-from src.prediction import MolecularTransformerReagentPredictor
-from src.tokenizer import smi_tokenizer
+import utils as ut
+from prediction import MolecularTransformerReagentPredictor
+from tokenizer import smi_tokenizer
 
 RDLogger.DisableLog('rdApp.*')
 
@@ -42,7 +44,7 @@ def extract_reagents(smi: str) -> str:
     return center
 
 
-def get_files_for_forward_prediction(path,
+def get_files_for_forward_prediction(path: Path,
                                      subset: str,
                                      reag_predictor: 'MolecularTransformerReagentPredictor',
                                      mixed: bool = False) -> None:
@@ -126,9 +128,10 @@ def get_files_for_forward_prediction(path,
     needs_replacement = (data["rgs_rdkit"].apply(num_mols) < data["rgs_top1"].apply(num_mols)) & (
             data["rgs_top1"].apply(ut.canonicalize_smiles) != '')
     replace_idx = data[needs_replacement].index
-    print(f"Reactions altered in top1+rdkit strategy: {len(replace_idx)} ({(100 * len(replace_idx)) / len(data):.2f}%)")
-    print("Examples of indexes of reactions with replaced reagents:")
-    print(replace_idx[:100])
+    logging.info(
+        f"Reactions altered in top1+rdkit strategy: {len(replace_idx)} ({(100 * len(replace_idx)) / len(data):.2f}%)")
+    logging.debug("Examples of indexes of reactions with replaced reagents:")
+    logging.debug(replace_idx[:100])
     leave_idx = data[~needs_replacement].index
 
     data.loc[leave_idx, "src_reagents_top1_and_rdkit"] = data_src.loc[leave_idx, 0]
@@ -166,13 +169,17 @@ def get_files_for_forward_prediction(path,
 
 
 if __name__ == '__main__':
+
+    logging.basicConfig(
+        filename=ut.get_root_dir() / "logs" / f"reagent_substitution_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.log",
+        level=logging.DEBUG,
+        format='%(asctime)s %(levelname)s: %(message)s')
+
     parser = ArgumentParser()
     parser.add_argument("--data_dir", type=str, required=True,
                         help="Path to a directory with tokenized files for product prediction")
     parser.add_argument("--reagent_model", type=str,
                         help="Path to a trained reagents prediction model", required=True)
-    parser.add_argument("--reagent_model_vocab", type=str, required=True,
-                        help="Path to the source vocabulary of a trained reagent prediction model")
     parser.add_argument("--including_test", action="store_true",
                         help="Whether to chenge reagents in the test set as well")
     parser.add_argument("--mixed_precursors", action="store_true",
@@ -191,12 +198,12 @@ if __name__ == '__main__':
         subsets.append("test")
 
     for subset in subsets:
-        print(f"Processing {subset}...")
-        reag_predictor = MolecularTransformerReagentPredictor(vocabulary_path=args.reagent_model_vocab,
-                                                              model_path=args.reagent_model,
+        logging.info(f"Processing {subset}...")
+        reag_predictor = MolecularTransformerReagentPredictor(model_path=args.reagent_model,
                                                               tokenized_path=f"data/test/{path.name.lower()}_no_reagents_{subset}.txt",
                                                               output_path=f"experiments/results/{path.name.lower()}_new_reagents_{subset}.txt",
-                                                              beam_size=5,
+                                                              beam_size=args.beam_size,
+                                                              n_best=args.beam_size,
                                                               gpu=0)
         get_files_for_forward_prediction(path,
                                          subset,

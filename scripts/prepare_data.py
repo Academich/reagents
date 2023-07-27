@@ -1,6 +1,7 @@
 from pathlib import Path
 from argparse import ArgumentParser
 import logging
+from datetime import datetime
 
 from multiprocessing import cpu_count
 from functools import partial
@@ -30,9 +31,9 @@ def main(args):
     logging.info("Number of entries in data: %d" % data.shape[0])
 
     stages = [
-        ut.drop_cxsmiles_info,
-        ut.mix_reagents,
-        ut.reassign_reaction_roles,
+        # ut.drop_cxsmiles_info, # For CEN data
+        # ut.mix_reagents,
+        # ut.reassign_reaction_roles,
         ut.canonical_remove_aam_rxn,
         ut.drop_isotopes,
         ut.assemble_ions
@@ -184,9 +185,11 @@ def main(args):
 
 if __name__ == '__main__':
     RDLogger.DisableLog('rdApp.*')
-    logging.basicConfig(filename='prepare_data.log',
-                        level=logging.DEBUG,
-                        format='%(asctime)s %(levelname)s: %(message)s')
+
+    logging.basicConfig(
+        filename=ut.get_root_dir() / "logs" / f"prepare_data_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.log",
+        level=logging.DEBUG,
+        format='%(asctime)s %(levelname)s: %(message)s')
 
     parser = ArgumentParser()
     group_input = parser.add_argument_group("Input settings")
