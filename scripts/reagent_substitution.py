@@ -60,11 +60,13 @@ def get_files_for_forward_prediction(path: Path,
         data_tgt = pd.DataFrame([i.strip().replace(" ", "") for i in h.readlines()])
 
     # Assemble full reactions
+    logging.info(f"Mixed setting: {mixed}")
     arrow = ">>" if mixed else ">"
     data = data_src + arrow + data_tgt
     data.columns = ["rxn_original"]
 
     # Determine reagents by RDKit
+    logging.info("Detecting reagents using RDKit...")
     data["rxn_reagents_rdkit"] = ut.parallelize_on_rows(data["rxn_original"],
                                                         ut.reassign_reaction_roles,
                                                         cpu_count(),
@@ -83,6 +85,7 @@ def get_files_for_forward_prediction(path: Path,
     data["rgs_rdkit"] = data["rxn_reagents_rdkit"].apply(extract_reagents)
 
     # Predict new reagents for all reactions with a trained model
+    logging.info(f"Predicting new reagents using {reag_predictor.model_path}")
     reag_predictor.make_and_store_predictions(data["rxn_no_reagents"])
     reag_predictor.load_predictions()
     predicted_reagents = reag_predictor.predictions
@@ -90,19 +93,24 @@ def get_files_for_forward_prediction(path: Path,
     # ===============================================================================
     # === Strategy 0: Delete all reagents entirely
     # ===============================================================================
-
+    logging.info("Strategy 0: Delete all reagents entirely")
     direct = Path(str(path) + "_no_reags/")
     direct.mkdir(parents=True, exist_ok=True)
-    with open(direct / f"src-{subset}.txt", 'w') as h:
+    src_save_path = direct / f"src-{subset}.txt"
+    tgt_save_path = direct / f"tgt-{subset}.txt"
+    logging.info("Saving files...")
+    logging.info(f"Source: {src_save_path.resolve()}")
+    logging.info(f"Target: {tgt_save_path.resolve()}")
+    with open(src_save_path, 'w') as h:
         h.write(
             "\n".join(reactants.apply(smi_tokenizer))
         )
-    shutil.copy(path / f"tgt-{subset}.txt", direct / f"tgt-{subset}.txt")
+    shutil.copy(path / f"tgt-{subset}.txt", tgt_save_path)
 
     # ===============================================================================
     # === Strategy 1: Replace reagents with top-1 reagent prediction in all cases
     # ===============================================================================
-
+    logging.info("Strategy 1: Replace reagents with top-1 reagent prediction in all cases")
     data["rgs_top1"] = predicted_reagents["p_reagents_1"]
     if mixed:
         data["src_reagents_top1"] = (reactants + '.' + data["rgs_top1"]).str.strip('.').apply(shuffle_molecules)
@@ -111,16 +119,24 @@ def get_files_for_forward_prediction(path: Path,
 
     direct = Path(str(path) + "_reags_top1/")
     direct.mkdir(parents=True, exist_ok=True)
-    with open(direct / f"src-{subset}.txt", 'w') as h:
+    src_save_path = direct / f"src-{subset}.txt"
+    tgt_save_path = direct / f"tgt-{subset}.txt"
+    logging.info("Saving files...")
+    logging.info(f"Source: {src_save_path.resolve()}")
+    logging.info(f"Target: {tgt_save_path.resolve()}")
+    with open(src_save_path, 'w') as h:
         h.write(
             "\n".join(data["src_reagents_top1"].apply(smi_tokenizer))
         )
-    shutil.copy(path / f"tgt-{subset}.txt", direct / f"tgt-{subset}.txt")
+    shutil.copy(path / f"tgt-{subset}.txt", tgt_save_path)
 
     # ===============================================================================
     # === Strategy 2: Replace reagents with top-1 reagent prediction if there are more
     # === molecules in the prediction and the prediction is valid
     # ===============================================================================
+    logging.info(
+        "Strategy 2: Replace reagents with top-1 valid reagent prediction if there are more molecules in the prediction"
+    )
     data["rgs_top1_and_rdkit"] = np.nan
 
     data["src_reagents_top1_and_rdkit"] = np.nan
@@ -139,16 +155,24 @@ def get_files_for_forward_prediction(path: Path,
 
     direct = Path(str(path) + "_reags_top1_and_rdkit/")
     direct.mkdir(parents=True, exist_ok=True)
-    with open(direct / f"src-{subset}.txt", 'w') as h:
+    src_save_path = direct / f"src-{subset}.txt"
+    tgt_save_path = direct / f"tgt-{subset}.txt"
+    logging.info("Saving files...")
+    logging.info(f"Source: {src_save_path.resolve()}")
+    logging.info(f"Target: {tgt_save_path.resolve()}")
+    with open(src_save_path, 'w') as h:
         h.write(
             "\n".join(data["src_reagents_top1_and_rdkit"].apply(smi_tokenizer))
         )
-    shutil.copy(path / f"tgt-{subset}.txt", direct / f"tgt-{subset}.txt")
+    shutil.copy(path / f"tgt-{subset}.txt", tgt_save_path)
     # ===============================================================================
     # === Strategy 3: Replace reagents with predicted strings in which the reagents
     # === in all roles are those that are repeated the most across all predictions
     # === from top-1 to top-5
     # ===============================================================================
+    logging.info(
+        "Strategy 3: Role voting"
+    )
     data["rgs_role_voting"] = reag_predictor.suggestions_by_roles(n_catal=1, n_solv=1, n_redox=1, n_unspec=2)
 
     data["rgs_role_voting"] = data["rgs_role_voting"].apply(lambda x: ".".join([i for i in x if i]))
@@ -161,11 +185,16 @@ def get_files_for_forward_prediction(path: Path,
 
     direct = Path(str(path) + "_reags_role_voting/")
     direct.mkdir(parents=True, exist_ok=True)
-    with open(direct / f"src-{subset}.txt", 'w') as h:
+    src_save_path = direct / f"src-{subset}.txt"
+    tgt_save_path = direct / f"tgt-{subset}.txt"
+    logging.info("Saving files...")
+    logging.info(f"Source: {src_save_path.resolve()}")
+    logging.info(f"Target: {tgt_save_path.resolve()}")
+    with open(src_save_path, 'w') as h:
         h.write(
             "\n".join(data["src_reagents_role_voting"].apply(smi_tokenizer))
         )
-    shutil.copy(path / f"tgt-{subset}.txt", direct / f"tgt-{subset}.txt")
+    shutil.copy(path / f"tgt-{subset}.txt", tgt_save_path)
 
 
 if __name__ == '__main__':
@@ -189,7 +218,9 @@ if __name__ == '__main__':
 
     path = Path(args.data_dir).resolve()
 
-    logging.info(f"Processing src-{args.subset}.txt and tgt-{args.subset}.txt")
+    logging.info(f"Processing in {path}")
+    logging.info(f"Reactants with reagents: src-{args.subset}.txt")
+    logging.info(f"Products: tgt-{args.subset}.txt")
     tokenized_path = ut.get_root_dir() / "data" / "test" / f"{path.name.lower()}_no_reagents_{args.subset}.txt"
     output_path = ut.get_root_dir() / "experiments" / "results" / f"{path.name.lower()}_new_reagents_{args.subset}.txt"
     reag_predictor = MolecularTransformerReagentPredictor(
