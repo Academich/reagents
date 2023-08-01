@@ -146,7 +146,7 @@ def get_files_for_forward_prediction(path: Path,
     replace_idx = data[needs_replacement].index
     logging.info(
         f"Reactions altered in top1+rdkit strategy: {len(replace_idx)} ({(100 * len(replace_idx)) / len(data):.2f}%)")
-    logging.debug("Examples of indexes of reactions with replaced reagents:")
+    logging.debug("Examples of indexes of reactions with replaced reagents (first 100):")
     logging.debug(replace_idx[:100])
     leave_idx = data[~needs_replacement].index
 
