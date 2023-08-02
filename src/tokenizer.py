@@ -1,6 +1,6 @@
 import re
 
-PATTERN = "(\[[^\]]+]|Br?|Cl?|N|O|S|P|F|I|b|c|n|o|s|p|\(|\)|\.|=|#|-|\+|\\\\|\/|:|~|@|\?|>>|\*|\$|\%[0-9]{2}|[0-9])"
+PATTERN = "(\[[^\]]+]|Br?|Cl?|N|O|S|P|F|I|b|c|n|o|s|p|\(|\)|\.|=|#|-|\+|\\\\|\/|:|~|@|\?|>>|>|\*|\$|\%[0-9]{2}|[0-9])"
 regex = re.compile(PATTERN)
 
 
@@ -12,6 +12,7 @@ def smi_tokenizer(smi: str) -> str:
     assert smi == ''.join(tokens)
     return ' '.join(tokens)
 
+
 if __name__ == '__main__':
-    s = "c1ccccc1.CC#N.O=C[O-][Na+].[NH4+].[Cl-].[235U]"
+    s = "c1ccccc1.CC#N.O=C[O-][Na+]>>[NH4+].[Cl-]>[235U]"
     print(smi_tokenizer(s))
