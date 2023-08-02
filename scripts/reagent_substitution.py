@@ -168,7 +168,7 @@ def get_files_for_forward_prediction(path: Path,
     # ===============================================================================
     # === Strategy 3: Replace reagents with predicted strings in which the reagents
     # === in all roles are those that are repeated the most across all predictions
-    # === from top-1 to top-5
+    # === from top-1 to top-N
     # ===============================================================================
     logging.info(
         "Strategy 3: Role voting"
