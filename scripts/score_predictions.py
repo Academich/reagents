@@ -67,7 +67,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('-beam_size', type=int, default=5,
+    parser.add_argument('--beam_size', type=int, default=5,
                         help='Beam size')
     parser.add_argument('--predictions', '-p', type=str, default="",
                         help="Path to file containing the predictions")
