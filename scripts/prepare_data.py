@@ -31,9 +31,9 @@ def main(args):
     logging.info("Number of entries in data: %d" % data.shape[0])
 
     stages = [
-        # ut.drop_cxsmiles_info, # For CEN data
-        # ut.mix_reagents,
-        # ut.reassign_reaction_roles,
+        ut.drop_cxsmiles_info,
+        ut.mix_reagents,
+        ut.reassign_reaction_roles,
         ut.canonical_remove_aam_rxn,
         ut.drop_isotopes,
         ut.assemble_ions
