@@ -100,17 +100,19 @@ To make predictions for reactions supplied in a .txt file as SMILES, use the fol
 The supplied reactions should be tokenized with tokens separated by spaces, like in files produced by `prepare_data.py`.
 
 ## Citation
-The preprint: 
+Paper: 
 ```
-@article{andronov_voinarovska_andronova_wand_clevert_schmidhuber_2022, 
- place={Cambridge}, 
- title={Reagent Prediction with a Molecular Transformer Improves Reaction Data Quality}, 
- DOI={10.26434/chemrxiv-2022-sn2kr}, 
- journal={ChemRxiv},
- publisher={Cambridge Open Engage}, 
- author={Andronov, Mikhail and Voinarovska, Varvara and Andronova, Natalia and Wand, Michael and Clevert, Djork-Arné and Schmidhuber, Jürgen}, 
- year={2022}
- } 
+@article{andronov_voinarovska_andronova_wand_clevert_schmidhuber_2022,
+author     ="Andronov, Mikhail and Voinarovska, Varvara and Andronova, Natalia and Wand, Michael and Clevert, Djork-Arné and Schmidhuber, Jürgen",
+title      ="Reagent prediction with a molecular transformer improves reaction data quality",
+journal    ="Chem. Sci.",
+year       ="2023",
+volume     ="14",
+issue      ="12",
+pages      ="3235-3246",
+publisher  ="The Royal Society of Chemistry",
+doi        ="10.1039/D2SC06798F",
+url        ="http://dx.doi.org/10.1039/D2SC06798F"
 ```
 
 The underlying framework:
